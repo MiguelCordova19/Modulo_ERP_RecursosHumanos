@@ -1,0 +1,54 @@
+---
+deployment:
+  tasks:
+    # Limpiar archivos anteriores (opcional)
+    - export DEPLOYPATH=/home/username/public_html/
+    
+    # Copiar archivos principales al directorio público
+    - /bin/cp index.html $DEPLOYPATH
+    - /bin/cp styles.css $DEPLOYPATH
+    - /bin/cp script.js $DEPLOYPATH
+    
+    # Crear directorio de assets si no existe
+    - /bin/mkdir -p $DEPLOYPATH/assets
+    
+    # Establecer permisos correctos
+    - /bin/chmod 644 $DEPLOYPATH/index.html
+    - /bin/chmod 644 $DEPLOYPATH/styles.css
+    - /bin/chmod 644 $DEPLOYPATH/script.js
+    
+    # Opcional: Crear archivo .htaccess para configuraciones adicionales
+    - echo "RewriteEngine On" > $DEPLOYPATH/.htaccess
+    - echo "RewriteCond %{REQUEST_FILENAME} !-f" >> $DEPLOYPATH/.htaccess
+    - echo "RewriteCond %{REQUEST_FILENAME} !-d" >> $DEPLOYPATH/.htaccess
+    - echo "RewriteRule ^(.*)$ index.html [QSA,L]" >> $DEPLOYPATH/.htaccess
+    
+    # Configurar cache para archivos estáticos
+    - echo "<IfModule mod_expires.c>" >> $DEPLOYPATH/.htaccess
+    - echo "ExpiresActive On" >> $DEPLOYPATH/.htaccess
+    - echo "ExpiresByType text/css \"access plus 1 month\"" >> $DEPLOYPATH/.htaccess
+    - echo "ExpiresByType application/javascript \"access plus 1 month\"" >> $DEPLOYPATH/.htaccess
+    - echo "ExpiresByType text/html \"access plus 1 hour\"" >> $DEPLOYPATH/.htaccess
+    - echo "</IfModule>" >> $DEPLOYPATH/.htaccess
+    
+    # Configurar compresión GZIP
+    - echo "<IfModule mod_deflate.c>" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE text/plain" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE text/html" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE text/xml" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE text/css" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE application/xml" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE application/xhtml+xml" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE application/rss+xml" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE application/javascript" >> $DEPLOYPATH/.htaccess
+    - echo "AddOutputFilterByType DEFLATE application/x-javascript" >> $DEPLOYPATH/.htaccess
+    - echo "</IfModule>" >> $DEPLOYPATH/.htaccess
+    
+    # Configurar seguridad básica
+    - echo "<Files \"*.yml\">" >> $DEPLOYPATH/.htaccess
+    - echo "Order allow,deny" >> $DEPLOYPATH/.htaccess
+    - echo "Deny from all" >> $DEPLOYPATH/.htaccess
+    - echo "</Files>" >> $DEPLOYPATH/.htaccess
+    
+    # Mensaje de confirmación
+    - echo "Deployment completado exitosamente para ERP Meridian Login"

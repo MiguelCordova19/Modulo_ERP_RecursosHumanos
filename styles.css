@@ -1,0 +1,403 @@
+/* Variables de colores basadas en la imagen */
+:root {
+    --primary-coral: #E8A598;
+    --secondary-coral: #D4958A;
+    --light-coral: #F5E6E3;
+    --dark-coral: #C8847A;
+    --accent-green: #4CAF50;
+    --accent-orange: #FF9800;
+    --text-dark: #2C3E50;
+    --text-light: #7F8C8D;
+    --white: #FFFFFF;
+    --light-gray: #F8F9FA;
+    --border-gray: #E9ECEF;
+}
+
+/* Reset y estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--light-coral) 0%, var(--white) 100%);
+    overflow-x: hidden;
+}
+
+/* Sección de bienvenida (lado izquierdo) */
+.welcome-section {
+    background: linear-gradient(135deg, var(--primary-coral) 0%, var(--secondary-coral) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Logo */
+.logo-container {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dark);
+}
+
+.logo-container i {
+    font-size: 24px;
+    color: var(--text-dark);
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+.logo-subtitle {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-left: -5px;
+}
+
+/* Contenedor de ilustración */
+.illustration-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    height: 400px;
+    margin: 0 auto;
+}
+
+/* Personajes */
+.characters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    position: relative;
+    z-index: 2;
+}
+
+.character {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.character-head {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #F4C2A1;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.character-left .character-head::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 30px;
+    background: #2C3E50;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+
+.character-right .character-head::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 30px;
+    background: #2C3E50;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+
+.character-body {
+    width: 50px;
+    height: 80px;
+    border-radius: 25px;
+}
+
+.character-left .character-body {
+    background: #E74C3C;
+}
+
+.character-right .character-body {
+    background: #34495E;
+}
+
+/* Banner de bienvenida */
+.welcome-banner {
+    background: var(--white);
+    padding: 20px 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transform: rotate(-2deg);
+}
+
+.welcome-banner h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text-dark);
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+/* Plantas decorativas */
+.plants {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.plant {
+    position: absolute;
+    color: var(--accent-green);
+    font-size: 30px;
+}
+
+.plant-1 {
+    bottom: 50px;
+    left: 80px;
+    transform: rotate(-15deg);
+}
+
+.plant-2 {
+    bottom: 60px;
+    right: 100px;
+    transform: rotate(20deg);
+}
+
+.plant-3 {
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-10deg);
+}
+
+/* Elementos decorativos */
+.decorative-elements {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.element {
+    position: absolute;
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 0.6;
+}
+
+.element-1 {
+    top: 100px;
+    left: 100px;
+    color: var(--white);
+}
+
+.element-2 {
+    top: 150px;
+    right: 150px;
+    color: #E74C3C;
+}
+
+.element-3 {
+    bottom: 200px;
+    left: 50px;
+    color: var(--accent-green);
+}
+
+.element-4 {
+    top: 200px;
+    left: 200px;
+    color: var(--accent-orange);
+}
+
+/* Sección de login (lado derecho) */
+.login-section {
+    background: var(--white);
+    padding: 40px;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Avatar */
+.avatar-container {
+    margin-bottom: 40px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E8E8E8, #D0D0D0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border: 3px solid var(--border-gray);
+}
+
+.avatar i {
+    font-size: 30px;
+    color: var(--text-light);
+}
+
+/* Formulario */
+.login-form .form-control {
+    border: none;
+    border-radius: 25px;
+    padding: 15px 20px;
+    background: var(--light-gray);
+    font-size: 14px;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.login-form .form-control:focus {
+    background: var(--white);
+    border: 2px solid var(--primary-coral);
+    box-shadow: 0 0 0 0.2rem rgba(232, 165, 152, 0.25);
+}
+
+.login-form .form-control::placeholder {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.input-group-text {
+    border: none;
+    border-radius: 0 25px 25px 0;
+    background: var(--light-gray);
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.input-group:focus-within .input-group-text {
+    background: var(--white);
+    border: 2px solid var(--primary-coral);
+    border-left: none;
+}
+
+/* Botón de login */
+.btn-login {
+    background: linear-gradient(135deg, var(--primary-coral), var(--secondary-coral));
+    border: none;
+    border-radius: 25px;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(232, 165, 152, 0.4);
+}
+
+.btn-login:hover {
+    background: linear-gradient(135deg, var(--secondary-coral), var(--dark-coral));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(232, 165, 152, 0.6);
+    color: var(--white);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+/* Enlaces */
+.forgot-password {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: var(--primary-coral);
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .welcome-section {
+        display: none;
+    }
+    
+    .login-section {
+        background: linear-gradient(135deg, var(--light-coral) 0%, var(--white) 100%);
+    }
+    
+    .login-container {
+        background: var(--white);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+}
+
+@media (max-width: 576px) {
+    .welcome-banner h1 {
+        font-size: 2rem;
+    }
+    
+    .login-container {
+        padding: 30px 20px;
+    }
+    
+    .character {
+        transform: scale(0.8);
+    }
+}
+
+/* Animaciones */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.character {
+    animation: float 3s ease-in-out infinite;
+}
+
+.character-right {
+    animation-delay: 1.5s;
+}
+
+.plant {
+    animation: float 4s ease-in-out infinite;
+}
+
+.plant-2 {
+    animation-delay: 1s;
+}
+
+.plant-3 {
+    animation-delay: 2s;
+}
+
+/* Efectos de hover */
+.avatar {
+    transition: all 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
