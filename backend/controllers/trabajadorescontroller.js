@@ -2,7 +2,7 @@ const {pool} = require('../configuration/baseDatos');
 
 const obtenerListaTrabajadores = async (req, res) => {
     try {
-        const consulta = 'SELECT * FROM rrhh_trabajador';
+        const consulta = 'CALL rrhh_trabajador_getList()';
         const resultado = await pool.query(consulta);
 
         res.json({

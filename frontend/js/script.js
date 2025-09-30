@@ -148,14 +148,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (validCredentials[username] && validCredentials[username] === password) {
                 showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
                 
-                // Simular redirección después de 2 segundos
+                // Guardar datos de autenticación
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('username', username);
+                localStorage.setItem('loginTime', new Date().toISOString());
+                
+                // Redirigir al dashboard después de 2 segundos
                 setTimeout(() => {
-                    // En un entorno real, aquí se redirigiría al dashboard
-                    alert('¡Bienvenido al sistema ERP Meridian!\n\nEn un entorno real, serías redirigido al dashboard.');
-                    
-                    // Limpiar formulario
-                    loginForm.reset();
-                    updateLoginButton();
+                    window.location.href = '/dashboard.html';
                 }, 2000);
             } else {
                 showMessage('Credenciales incorrectas. Verifique su usuario y contraseña.', 'danger');
