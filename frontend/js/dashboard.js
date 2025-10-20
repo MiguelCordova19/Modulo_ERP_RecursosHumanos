@@ -33,14 +33,11 @@ async function loadModuleContent(ruta, titulo, menuId) {
     
     try {
         const url = `/modules/${ruta}.html`;
-        console.log('🌐 Fetch a:', url);
         
         const response = await fetch(url);
-        console.log('📡 Response status:', response.status);
         
         if (response.ok) {
             const html = await response.text();
-            console.log('✅ HTML cargado, longitud:', html.length);
             mainContent.innerHTML = html;
             
             const scripts = mainContent.querySelectorAll('script');
@@ -410,29 +407,37 @@ function initializeUserDropdown() {
 }
 
 function checkAuthentication() {
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    const username = localStorage.getItem('username');
+    const user = localStorage.getItem('user');
     
-    if (!isAuthenticated || isAuthenticated !== 'true') {
-        window.location.href = '/index.html';
+    if (!user) {
+        console.log('No hay sesión activa, redirigiendo al login...');
+        window.location.href = '/login';
         return;
     }
     
-    if (username) {
+    try {
+        const userData = JSON.parse(user);
+        console.log('Usuario autenticado:', userData.usuario);
+        
+        // Actualizar el nombre del usuario en el dropdown
         const userNameElement = document.querySelector('#userDropdown span');
-        if (userNameElement) {
-            userNameElement.textContent = username;
+        if (userNameElement && userData.nombre_completo) {
+            userNameElement.textContent = userData.nombre_completo;
         }
+    } catch (error) {
+        console.error('Error al parsear datos de usuario:', error);
+        localStorage.removeItem('user');
+        window.location.href = '/login';
     }
 }
 
 function logout() {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('username');
+    localStorage.removeItem('user');
+    sessionStorage.clear();
     showNotification('Sesión cerrada exitosamente', 'success');
     
     setTimeout(() => {
-        window.location.href = '/index.html';
+        window.location.href = '/';
     }, 1000);
 }
 

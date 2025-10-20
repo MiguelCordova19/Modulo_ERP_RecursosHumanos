@@ -7,27 +7,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.getElementById('togglePassword');
     const loginButton = document.querySelector('.btn-login');
     
-    // Credenciales de ejemplo (en un entorno real, esto se manejaría en el backend)
-    const validCredentials = {
-        'admin': 'admin123',
-        'usuario': 'password',
-        'meridian': 'erp2024'
-    };
-    
     // Toggle para mostrar/ocultar contraseña
-    togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        
-        // Cambiar el icono
-        if (type === 'text') {
-            togglePassword.classList.remove('fa-eye');
-            togglePassword.classList.add('fa-eye-slash');
-        } else {
-            togglePassword.classList.remove('fa-eye-slash');
-            togglePassword.classList.add('fa-eye');
-        }
-    });
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Cambiar el icono
+            if (type === 'text') {
+                togglePassword.classList.remove('fa-eye');
+                togglePassword.classList.add('fa-eye-slash');
+            } else {
+                togglePassword.classList.remove('fa-eye-slash');
+                togglePassword.classList.add('fa-eye');
+            }
+        });
+    }
     
     // Validación en tiempo real
     function validateInput(input) {
@@ -35,23 +30,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputGroup = input.closest('.input-group');
         
         // Remover clases de validación previas
-        inputGroup.classList.remove('is-valid', 'is-invalid');
+        if (inputGroup) {
+            inputGroup.classList.remove('is-valid', 'is-invalid');
+        }
         
         if (value.length === 0) {
             return false;
         }
         
-        if (input.type === 'text' && value.length < 3) {
-            inputGroup.classList.add('is-invalid');
+        if (input.id === 'username' && value.length < 3) {
+            if (inputGroup) inputGroup.classList.add('is-invalid');
             return false;
         }
         
-        if (input.type === 'password' && value.length < 6) {
-            inputGroup.classList.add('is-invalid');
+        if (input.id === 'password' && value.length < 4) {
+            if (inputGroup) inputGroup.classList.add('is-invalid');
             return false;
         }
         
-        inputGroup.classList.add('is-valid');
+        if (inputGroup) inputGroup.classList.add('is-valid');
         return true;
     }
     
@@ -68,8 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Actualizar estado del botón de login
     function updateLoginButton() {
-        const isUsernameValid = validateInput(usernameInput);
-        const isPasswordValid = validateInput(passwordInput);
+        const isUsernameValid = usernameInput.value.trim().length >= 3;
+        const isPasswordValid = passwordInput.value.length >= 4;
         
         if (isUsernameValid && isPasswordValid) {
             loginButton.disabled = false;
@@ -92,31 +89,120 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.className = `alert alert-${type} login-message mt-3`;
         messageDiv.style.borderRadius = '15px';
         messageDiv.style.fontSize = '14px';
-        messageDiv.textContent = message;
+        messageDiv.style.animation = 'fadeIn 0.3s ease';
+        messageDiv.innerHTML = `
+            <i class="fas ${getIconForType(type)} me-2"></i>
+            <span>${message}</span>
+        `;
         
         loginForm.appendChild(messageDiv);
         
-        // Remover mensaje después de 5 segundos
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.remove();
-            }
-        }, 5000);
+        // Remover mensaje después de 5 segundos (excepto si es error)
+        if (type !== 'danger') {
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => messageDiv.remove(), 300);
+                }
+            }, 5000);
+        }
+    }
+    
+    // Obtener icono según tipo de mensaje
+    function getIconForType(type) {
+        const icons = {
+            'success': 'fa-check-circle',
+            'danger': 'fa-exclamation-circle',
+            'warning': 'fa-exclamation-triangle',
+            'info': 'fa-info-circle'
+        };
+        return icons[type] || 'fa-info-circle';
     }
     
     // Función de loading
     function setLoadingState(isLoading) {
         if (isLoading) {
-            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Autenticando...';
             loginButton.disabled = true;
+            usernameInput.disabled = true;
+            passwordInput.disabled = true;
         } else {
-            loginButton.innerHTML = 'Iniciar Sesión';
+            loginButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión';
             loginButton.disabled = false;
+            usernameInput.disabled = false;
+            passwordInput.disabled = false;
+        }
+    }
+    
+    // Función para autenticar con el backend
+    async function authenticate(username, password) {
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+            
+            // Verificar si la respuesta es OK
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            return result;
+            
+        } catch (error) {
+            console.error('Error en autenticación:', error);
+            return {
+                success: false,
+                message: 'Error de conexión con el servidor. Verifique su red.'
+            };
+        }
+    }
+    
+    // Función para guardar datos de sesión
+    function saveSession(userData) {
+        try {
+            // Guardar autenticación
+            localStorage.setItem('isAuthenticated', 'true');
+            
+            // Guardar datos del usuario
+            localStorage.setItem('usuario_id', userData.usuario_id || '');
+            localStorage.setItem('usuario', userData.usuario || '');
+            localStorage.setItem('nombre_completo', userData.nombre_completo || '');
+            localStorage.setItem('correo', userData.correo || '');
+            
+            // Guardar datos de empresa
+            localStorage.setItem('empresa_id', userData.empresa_id || '');
+            localStorage.setItem('empresa_nombre', userData.empresa_nombre || '');
+            
+            // Guardar datos adicionales
+            localStorage.setItem('sede_id', userData.sede_id || '');
+            localStorage.setItem('rol_id', userData.rol_id || '');
+            localStorage.setItem('puesto_id', userData.puesto_id || '');
+            
+            // Guardar timestamp de login
+            localStorage.setItem('loginTime', new Date().toISOString());
+            
+            console.log('✅ Sesión guardada:', {
+                usuario: userData.usuario,
+                empresa: userData.empresa_nombre
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('Error al guardar sesión:', error);
+            return false;
         }
     }
     
     // Manejo del envío del formulario
-    loginForm.addEventListener('submit', function(e) {
+    loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const username = usernameInput.value.trim();
@@ -134,37 +220,52 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (password.length < 6) {
-            showMessage('La contraseña debe tener al menos 6 caracteres.', 'warning');
+        if (password.length < 4) {
+            showMessage('La contraseña debe tener al menos 4 caracteres.', 'warning');
             passwordInput.focus();
             return;
         }
         
-        // Simular proceso de autenticación
+        // Iniciar proceso de autenticación
         setLoadingState(true);
         
-        setTimeout(() => {
-            // Verificar credenciales
-            if (validCredentials[username] && validCredentials[username] === password) {
-                showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
-                
-                // Guardar datos de autenticación
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('username', username);
-                localStorage.setItem('loginTime', new Date().toISOString());
-                
-                // Redirigir al dashboard después de 2 segundos
+        console.log('🔐 Intentando autenticar usuario:', username);
+        
+        // Llamar al backend
+        const result = await authenticate(username, password);
+        
+        if (result.success && result.data) {
+            console.log('✅ Autenticación exitosa');
+            
+            showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+            
+            // Guardar datos de sesión
+            const sessionSaved = saveSession(result.data);
+            
+            if (sessionSaved) {
+                // Redirigir al dashboard después de 1.5 segundos
                 setTimeout(() => {
                     window.location.href = '/dashboard.html';
-                }, 2000);
+                }, 1500);
             } else {
-                showMessage('Credenciales incorrectas. Verifique su usuario y contraseña.', 'danger');
-                passwordInput.value = '';
-                passwordInput.focus();
+                showMessage('Error al guardar la sesión. Intente nuevamente.', 'danger');
+                setLoadingState(false);
             }
             
+        } else {
+            console.log('❌ Autenticación fallida:', result.message);
+            
+            showMessage(
+                result.message || 'Usuario o contraseña incorrectos. Verifique sus credenciales.', 
+                'danger'
+            );
+            
+            // Limpiar contraseña y hacer focus
+            passwordInput.value = '';
+            passwordInput.focus();
+            
             setLoadingState(false);
-        }, 1500); // Simular delay de red
+        }
     });
     
     // Efectos visuales adicionales
@@ -225,15 +326,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Verificar si ya está autenticado
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    if (isAuthenticated === 'true') {
+        console.log('⚠️ Usuario ya autenticado, redirigiendo...');
+        window.location.href = '/dashboard.html';
+        return;
+    }
+    
     // Inicialización
     updateLoginButton();
     
-    // Mostrar credenciales de prueba en consola (solo para desarrollo)
-    console.log('=== CREDENCIALES DE PRUEBA ===');
-    console.log('Usuario: admin | Contraseña: admin123');
-    console.log('Usuario: usuario | Contraseña: password');
-    console.log('Usuario: meridian | Contraseña: erp2024');
-    console.log('==============================');
+    // Limpiar cualquier sesión anterior al cargar la página
+    if (!isAuthenticated) {
+        localStorage.clear();
+    }
+    
+    // Agregar estilos de animación
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+        
+        .login-message {
+            animation: fadeIn 0.3s ease;
+        }
+    `;
+    document.head.appendChild(style);
 });
 
 // Función para manejar errores globales
@@ -241,10 +379,20 @@ window.addEventListener('error', function(e) {
     console.error('Error en la aplicación:', e.error);
 });
 
-// Prevenir envío de formulario con F5
-window.addEventListener('keydown', function(e) {
-    if (e.key === 'F5') {
+// Prevenir recarga accidental
+window.addEventListener('beforeunload', function(e) {
+    const loginButton = document.querySelector('.btn-login');
+    if (loginButton && loginButton.disabled && loginButton.innerHTML.includes('Autenticando')) {
         e.preventDefault();
-        location.reload();
+        e.returnValue = '';
     }
 });
+
+// Exportar funciones para testing (opcional)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        validateInput,
+        showMessage,
+        authenticate
+    };
+}

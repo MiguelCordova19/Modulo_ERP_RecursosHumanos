@@ -1,24 +1,21 @@
+# Imagen base
 FROM node:18-alpine
 
-WORKDIR /app
+# Carpeta de trabajo principal
+WORKDIR /app/backend
 
 # Instalar nodemon globalmente para desarrollo
 RUN npm install -g nodemon
 
-# Crear directorios
-RUN mkdir -p /app/backend /app/frontend
-
-# Copiar package files del backend
-COPY package*.json ./backend/
-WORKDIR /app/backend
+# Copiar archivos de dependencias e instalarlas
+COPY package*.json ./
 RUN npm install
 
-# Copiar código fuente del backend
-COPY . .
+# Copiar el resto del backend
+COPY . ./
 
-# El frontend se montará como volumen
-
+# Exponer el puerto del servidor
 EXPOSE 3000
 
-# Usar nodemon para hot reload en desarrollo
+# Comando por defecto
 CMD ["npm", "run", "dev"]
