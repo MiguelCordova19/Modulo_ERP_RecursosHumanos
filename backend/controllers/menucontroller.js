@@ -4,10 +4,24 @@ class MenuController {
     
     // Obtener todos los menús con estructura jerárquica
     static async obtenerTodos(req, res) {
+        const client = await pool.connect();
+        
         try {
-            const query = `SELECT * FROM obtener_menus_activos();`;
+            // Iniciar transacción
+            await client.query('BEGIN');
             
-            const resultado = await pool.query(query);
+            // Llamar al procedimiento almacenado
+            await client.query('CALL sp_obtener_menus_activos()');
+            
+            // Obtener los resultados del cursor
+            const resultado = await client.query('FETCH ALL FROM menu_cursor');
+            
+            // Cerrar el cursor
+            await client.query('CLOSE menu_cursor');
+            
+            // Confirmar transacción
+            await client.query('COMMIT');
+            
             const menusJerarquicos = MenuController.organizarMenusJerarquicos(resultado.rows);
             
             res.status(200).json({
@@ -18,12 +32,18 @@ class MenuController {
             });
             
         } catch (error) {
+            // Revertir transacción en caso de error
+            await client.query('ROLLBACK');
+            
             console.error('Error al obtener menús:', error);
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor',
                 error: process.env.NODE_ENV === 'development' ? error.message : 'Error interno'
             });
+        } finally {
+            // Liberar el cliente
+            client.release();
         }
     }
 
@@ -32,6 +52,7 @@ class MenuController {
         const menuMap = new Map();
         const menusPrincipales = [];
 
+        // Crear mapa de menús
         menus.forEach(menu => {
             menuMap.set(menu.menu_id, {
                 ...menu,
@@ -39,6 +60,7 @@ class MenuController {
             });
         });
 
+        // Organizar jerarquía
         menus.forEach(menu => {
             const menuActual = menuMap.get(menu.menu_id);
             
@@ -52,17 +74,15 @@ class MenuController {
             }
         });
 
-        menusPrincipales.forEach(menu => {
+        // Ordenar hijos recursivamente
+        const ordenarHijos = (menu) => {
             if (menu.hijos && menu.hijos.length > 0) {
                 menu.hijos.sort((a, b) => a.menu_posicion - b.menu_posicion);
-                
-                menu.hijos.forEach(hijo => {
-                    if (hijo.hijos && hijo.hijos.length > 0) {
-                        hijo.hijos.sort((a, b) => a.menu_posicion - b.menu_posicion);
-                    }
-                });
+                menu.hijos.forEach(hijo => ordenarHijos(hijo));
             }
-        });
+        };
+
+        menusPrincipales.forEach(menu => ordenarHijos(menu));
 
         return menusPrincipales;
     }

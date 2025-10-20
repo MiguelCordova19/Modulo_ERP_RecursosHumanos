@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página No Encontrada</title>
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        .container-404 {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spline-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        spline-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .spline-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: auto;
+            z-index: 1;
+        }
+
+        .content-overlay {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            text-align: center;
+            color: white;
+            padding: 0;
+            max-width: 100%;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 10rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+            line-height: 1;
+            color: white;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+            pointer-events: none;
+        }
+
+        h2 {
+            display: none;
+        }
+
+        p {
+            display: none;
+        }
+
+        .btn-home {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #f4c67a 0%, #eaa75d 100%); /* tonos arena */
+            color: #3c2e1b; /* marrón oscuro para contraste */
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-home:hover {
+            transform: translateX(-50%) translateY(-2px);
+            background: linear-gradient(135deg, #eaa75d 0%, #f4c67a 100%);
+            box-shadow: 0 6px 25px rgba(234, 167, 93, 0.4);
+        }
+
+        .btn-home i {
+            font-size: 1.3rem;
+            color: #3c2e1b;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-code {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 6rem;
+            }
+
+            .btn-home {
+                padding: 15px 35px;
+                font-size: 1rem;
+                bottom: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 4.5rem;
+            }
+
+            .btn-home {
+                padding: 12px 30px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-404">
+        <!-- Animación de Spline -->
+        <div class="spline-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cargando animación...</p>
+            </div>
+            <iframe 
+                src="https://my.spline.design/404dino-73y9RukiJoXnCUEfWYwIxkfc/" 
+                frameborder="0" 
+                width="100%" 
+                height="100%"
+                id="splineFrame"
+                loading="lazy"
+                allowfullscreen
+            ></iframe>
+        </div>
+
+        <!-- Contenido superpuesto -->
+        <div class="content-overlay">
+            <h1>404</h1>
+        </div>
+
+        <!-- Botón flotante en la parte inferior -->
+        <a href="/dashboard" class="btn-home">
+            <i class="fas fa-home"></i>
+            <span>Volver al Dashboard</span>
+        </a>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Mostrar loading mientras carga
+        const loadingElement = document.getElementById('loading');
+        const splineFrame = document.getElementById('splineFrame');
+        
+        loadingElement.style.display = 'block';
+        
+        console.log('🎨 Página 404 cargada');
+        console.log('🔗 Cargando Spline via iframe');
+        
+        // Ocultar loading cuando el iframe cargue
+        splineFrame.addEventListener('load', () => {
+            console.log('✅ Iframe de Spline cargado correctamente');
+            setTimeout(() => {
+                loadingElement.style.display = 'none';
+            }, 1000); // Pequeño delay para que se vea la transición
+        });
+
+        splineFrame.addEventListener('error', (e) => {
+            console.error('❌ Error al cargar el iframe:', e);
+            loadingElement.innerHTML = '<div class="spinner"></div><p>⚠️ No se pudo cargar la animación</p>';
+        });
+        
+        // Timeout de seguridad
+        setTimeout(() => {
+            if (loadingElement.style.display !== 'none') {
+                console.warn('⚠️ Timeout: Ocultando loading de todas formas');
+                loadingElement.style.display = 'none';
+            }
+        }, 8000);
+    </script>
+</body>
+</html>

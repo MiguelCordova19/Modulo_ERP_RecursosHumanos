@@ -21,7 +21,7 @@
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-body">
-                <table id="tablaMotivos" class="table table-striped table-bordered table-hover" style="width:100%">
+                <table id="tablaMotivos" class="table table-striped table-bordered table-hover dt-module-table" style="width:100%">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -93,125 +93,15 @@
     </div>
 </div>
 
-<!-- Estilos específicos del módulo -->
-<style>
-/* Estilos para Motivo Préstamo */
-#tablaMotivos {
-    font-size: 14px;
-}
-
-#tablaMotivos thead th {
-    background-color: #6c757d;
-    color: white;
-    font-weight: 600;
-    text-align: center;
-    vertical-align: middle;
-    padding: 12px 8px;
-}
-
-#tablaMotivos thead input {
-    width: 100%;
-    padding: 4px 8px;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 12px;
-}
-
-#tablaMotivos tbody td {
-    vertical-align: middle;
-    padding: 10px 8px;
-}
-
-#tablaMotivos tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-.badge-estado {
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 4px;
-}
-
-.btn-action {
-    padding: 4px 8px;
-    font-size: 13px;
-    margin: 0 2px;
-    border-radius: 4px;
-}
-
-.btn-editar {
-    background-color: transparent;
-    border: 1px solid #007bff;
-    color: #007bff;
-}
-
-.btn-editar:hover {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-eliminar {
-    background-color: transparent;
-    border: 1px solid #dc3545;
-    color: #dc3545;
-}
-
-.btn-eliminar:hover {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* DataTables personalización */
-.dataTables_wrapper .dataTables_length,
-.dataTables_wrapper .dataTables_filter {
-    margin-bottom: 15px;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 4px 10px;
-    margin: 0 2px;
-    border-radius: 4px;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #007bff;
-    color: white !important;
-    border: 1px solid #007bff;
-}
-
-.dataTables_wrapper .dataTables_info {
-    padding-top: 10px;
-    font-size: 13px;
-}
-
-/* Modal personalizado */
-#modalMotivo .modal-header {
-    border-bottom: 3px solid #0056b3;
-}
-
-#modalMotivo .form-label {
-    color: #495057;
-    margin-bottom: 8px;
-}
-
-#modalMotivo .form-control:focus,
-#modalMotivo .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-</style>
-
-<!-- jQuery y DataTables -->
+<!-- CSS y Scripts -->
+<link rel="stylesheet" href="/css/modules/module-tables.css">
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
-<!-- Script específico del módulo -->
 <script src="/js/modules/motivo-prestamo.js"></script>
+
 <script>
-    // Inicializar el módulo cuando se carga
     $(document).ready(function() {
         if (typeof motivoPrestamo !== 'undefined') {
             motivoPrestamo.init();
