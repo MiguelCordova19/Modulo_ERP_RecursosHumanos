@@ -1,0 +1,625 @@
+/* Variables específicas del dashboard */
+:root {
+    --sidebar-bg: #FF7E70;
+    --sidebar-width: 280px;
+    --header-height: 60px;
+    --primary-coral: #61302B;
+    --secondary-coral: #E86B5E;
+    --text-dark: #FFFFFF;
+    --text-muted: #61302B;
+    --border-color: #dee2e6;
+    --hover-bg: #e9ecef;
+    --active-bg: #61302B;
+    --active-text: #61302B;
+    --text-menu: #61302B;
+}
+
+/* Layout principal */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header superior */
+.navbar {
+    height: var(--header-height);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: var(--primary-coral) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: var(--text-dark) !important;
+}
+
+/* Barra de búsqueda */
+.search-container {
+    position: relative;
+    width: 400px;
+    max-width: 100%;
+}
+
+.search-input {
+    padding-left: 40px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 10;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: var(--header-height);
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    background-color: var(--sidebar-bg);
+    width: var(--sidebar-width);
+    overflow-y: auto;
+}
+
+.sidebar .position-sticky {
+    padding: 1.5rem 1rem;
+}
+
+/* Logo PROMART en sidebar */
+.sidebar-brand {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.brand-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #61302B;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.brand-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    line-height: 1;
+}
+
+.brand-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1;
+    margin-top: 2px;
+}
+
+/* Menú de navegación - Color uniforme para todos los niveles */
+.nav-link {
+    color: var(--text-menu) !important;
+    padding: 0.75rem 1rem;
+    border-radius: 25px;
+    margin-bottom: 0.25rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.nav-link:hover {
+    background-color: var(--secondary-coral);
+    color: var(--text-menu) !important;
+    outline: none !important;
+}
+
+.nav-link.active {
+    background-color: var(--secondary-coral);
+    color: var(--text-menu) !important;
+    border: 2px solid var(--text-menu);
+    font-weight: 600;
+    outline: none !important;
+}
+
+.nav-link:focus,
+.nav-link:active,
+.nav-link:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: var(--secondary-coral) !important;
+    color: var(--text-menu) !important;
+    border-color: transparent !important;
+}
+
+/* Menú principal */
+.menu-item {
+    border-radius: 25px;
+    margin-bottom: 12px;
+    color: var(--text-menu) !important;
+    text-decoration: none !important;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background-color: var(--sidebar-bg);
+    font-size: 1.15rem;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.menu-item:hover {
+    background-color: var(--secondary-coral);
+    color: var(--text-menu) !important;
+    text-decoration: none !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    outline: none !important;
+}
+
+.menu-item.active {
+    background-color: var(--primary-coral);
+    color: #FFFFFF !important;
+    border: 2px solid var(--text-menu);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(97, 48, 43, 0.4);
+    transform: scale(1.02);
+    outline: none !important;
+}
+
+.menu-item.active i {
+    color: #FFFFFF !important;
+}
+
+.menu-item.active .collapse-icon {
+    color: #FFFFFF !important;
+}
+
+.menu-item.active:hover {
+    background-color: var(--primary-coral);
+    color: #FFFFFF !important;
+    outline: none !important;
+}
+
+.menu-item:focus,
+.menu-item:active,
+.menu-item:focus-visible {
+    outline: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    background-color: var(--secondary-coral) !important;
+    color: var(--text-menu) !important;
+}
+
+.menu-item .collapse-icon {
+    font-size: 1rem;
+    margin-left: auto;
+    color: var(--text-menu) !important;
+}
+
+.menu-item[aria-expanded="true"] .collapse-icon {
+    transform: rotate(180deg);
+}
+
+/* Submenú - Mismo color que menú principal */
+.submenu-item {
+    font-size: 1.05rem;
+    color: var(--text-menu) !important;
+    padding: 8px 16px;
+    margin-left: 1rem;
+    margin-bottom: 10px;
+    border-radius: 25px;
+    background-color: var(--sidebar-bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.submenu-item:hover {
+    color: var(--text-menu) !important;
+    background-color: var(--secondary-coral);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    outline: none !important;
+}
+
+.submenu-item.active {
+    background-color: var(--primary-coral);
+    color: #FFFFFF !important;
+    border: 2px solid var(--text-menu);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(97, 48, 43, 0.4);
+    transform: scale(1.02);
+    outline: none !important;
+}
+
+.submenu-item.active i {
+    color: #FFFFFF !important;
+}
+
+.submenu-item:focus,
+.submenu-item:active,
+.submenu-item:focus-visible {
+    outline: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    background-color: var(--secondary-coral) !important;
+    color: var(--text-menu) !important;
+}
+
+/* Submenú bullet */
+.submenu-bullet {
+    font-size: 0.6rem;
+    color: var(--text-menu) !important;
+    margin-right: 8px;
+}
+
+/* Bullet en menú activo */
+.submenu-item.active .submenu-bullet,
+.submenu-nivel-3.active .submenu-bullet {
+    color: #FFFFFF !important;
+}
+
+/* Submenú nivel 3 - Mismo color */
+.submenu-nivel-3 {
+    font-size: 1rem !important;
+    color: var(--text-menu) !important;
+    padding: 8px 16px;
+    margin-left: 2rem;
+    margin-bottom: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.submenu-nivel-3:hover {
+    background-color: var(--secondary-coral);
+    color: var(--text-menu) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    outline: none !important;
+}
+
+.submenu-nivel-3.active {
+    background-color: var(--primary-coral);
+    color: #FFFFFF !important;
+    border: 2px solid var(--text-menu);
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(97, 48, 43, 0.4);
+    transform: scale(1.02);
+    outline: none !important;
+}
+
+.submenu-nivel-3.active i {
+    color: #FFFFFF !important;
+}
+
+.submenu-nivel-3:focus,
+.submenu-nivel-3:active,
+.submenu-nivel-3:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: var(--secondary-coral) !important;
+    color: var(--text-menu) !important;
+}
+
+/* Iconos de menú - mismo color */
+.menu-item i,
+.submenu-item i,
+.submenu-nivel-3 i {
+    color: var(--text-menu) !important;
+}
+
+/* Contenido principal */
+main {
+    margin-left: var(--sidebar-width);
+    padding-top: 1rem;
+    min-height: calc(100vh - var(--header-height));
+}
+
+/* Mensaje de bienvenida */
+.welcome-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+/* Cards de estadísticas */
+.card {
+    border: none;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.border-left-primary {
+    border-left: 4px solid #007bff !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #28a745 !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.font-weight-bold {
+    font-weight: 700;
+}
+
+.text-gray-800 {
+    color: #5a5c69;
+}
+
+.text-gray-300 {
+    color: #dddfeb;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+    }
+    
+    main {
+        margin-left: 0;
+    }
+    
+    .search-container {
+        width: 200px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .navbar-brand span {
+        display: none;
+    }
+    
+    .search-container {
+        width: 150px;
+    }
+    
+    .search-input {
+        font-size: 0.875rem;
+    }
+}
+
+/* Iconos de menú con transición */
+.menu-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+}
+
+.menu-item.active i {
+    color: var(--text-menu) !important;
+}
+
+/* Indicador visual en el lado izquierdo - DESACTIVADO */
+.menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background-color: transparent;
+    transition: none;
+    border-radius: 0;
+}
+
+/* Estados de carga */
+.menu-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Animaciones */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-item {
+    animation: fadeInSlide 0.5s ease forwards;
+    margin-bottom: 4px;
+}
+
+/* Estilos para alertas pequeñas */
+.alert-sm {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Botón de actualizar menús */
+.btn-outline-primary.btn-sm {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .menu-item {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+.collapse {
+    transition: all 0.3s ease;
+}
+
+.nav-link {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Eliminar animación de brillo */
+.nav-link::before {
+    display: none;
+}
+
+/* Scrollbar personalizado para sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Estados activos */
+.nav-item.active > .nav-link {
+    background-color: var(--secondary-coral);
+    color: var(--text-menu) !important;
+    font-weight: 600;
+    border: 2px solid var(--text-menu);
+    outline: none !important;
+}
+
+.nav-item.active .submenu-item {
+    color: var(--text-menu) !important;
+}
+
+/* Efectos de hover mejorados */
+.card-body {
+    transition: all 0.2s ease;
+}
+
+.card:hover .card-body {
+    background-color: rgba(0,123,255,0.02);
+}
+
+/* Iconos en el header */
+.navbar .fas {
+    color: var(--text-dark);
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Estilos para menús desplegables */
+.menu-dropdown,
+.menu-dropdown-sub {
+    font-weight: 600;
+    color: var(--text-menu) !important;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.menu-dropdown:hover,
+.menu-dropdown-sub:hover {
+    background-color: var(--secondary-coral);
+    color: var(--text-menu) !important;
+    outline: none !important;
+}
+
+.menu-dropdown:focus,
+.menu-dropdown:active,
+.menu-dropdown:focus-visible,
+.menu-dropdown-sub:focus,
+.menu-dropdown-sub:active,
+.menu-dropdown-sub:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: var(--secondary-coral) !important;
+    color: var(--text-menu) !important;
+}
+
+.collapse-icon,
+.collapse-icon-sub {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+    color: var(--text-menu) !important;
+}
+
+/* REGLAS GLOBALES PARA ELIMINAR EL AZUL */
+a, a:hover, a:focus, a:active, a:visited {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Eliminar color azul de Bootstrap en enlaces del sidebar */
+.sidebar a,
+.sidebar a:hover,
+.sidebar a:focus,
+.sidebar a:active,
+.sidebar a:visited {
+    color: var(--text-menu) !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+/* Eliminar outline azul en todos los elementos del menú */
+.nav-item *,
+.nav-item *:focus,
+.nav-item *:active,
+.nav-item *:focus-visible {
+    outline: none !important;
+    outline-color: transparent !important;
+    outline-width: 0 !important;
+}
