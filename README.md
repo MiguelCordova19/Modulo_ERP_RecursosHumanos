@@ -41,8 +41,6 @@ Modulo_ERP_RecursosHumanos/
 | Usuario   | Contraseña |
 |-----------|------------|
 | admin     | admin123   |
-| usuario   | password   |
-| meridian  | erp2024    |
 
 ## 🐳 Deployment con Docker
 
