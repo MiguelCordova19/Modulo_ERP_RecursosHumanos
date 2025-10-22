@@ -1,0 +1,52 @@
+version: '3.8'
+
+services: 
+
+  # Aplicación Node.js
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=root
+      - DB_USER=root
+      - DB_PASSWORD=root
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app/backend
+      - ../frontend:/app/frontend
+      - /app/backend/node_modules
+    restart: unless-stopped
+    working_dir: /app/backend
+
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=root
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  
+  
