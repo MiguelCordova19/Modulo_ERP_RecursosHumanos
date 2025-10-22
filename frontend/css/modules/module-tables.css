@@ -89,14 +89,8 @@
     border-right: none;
 }
 
-.dt-module-table tbody tr {
-    transition: all 0.2s ease;
-}
-
 .dt-module-table tbody tr:hover {
     background-color: #FFF5F4;
-    transform: scale(1.01);
-    box-shadow: 0 2px 8px rgba(255, 126, 112, 0.1);
 }
 
 .dt-module-table tbody tr:nth-child(even) {
@@ -107,7 +101,11 @@
     background-color: #FFF5F4;
 }
 
-/* Footer de la tabla */
+/* Footer de la tabla - Forzar que aparezca después del header */
+.dt-module-table tfoot {
+    display: table-header-group !important;
+}
+
 .dt-module-table tfoot th {
     background-color: #FF7E70;
     color: white;
@@ -508,9 +506,7 @@
     }
 }
 
-.dt-module-table tbody tr {
-    animation: fadeIn 0.3s ease;
-}
+/* Animaciones removidas para mantener tablas estáticas */
 
 /* ========================================
    RESPONSIVE
