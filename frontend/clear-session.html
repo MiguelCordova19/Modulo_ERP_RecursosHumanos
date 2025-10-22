@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Sesión</title>
+</head>
+<body>
+    <h1>Limpiando sesión...</h1>
+    <p id="status">Procesando...</p>
+    
+    <script>
+        // Limpiar todo el localStorage
+        localStorage.clear();
+        
+        // También limpiar sessionStorage por si acaso
+        sessionStorage.clear();
+        
+        document.getElementById('status').innerHTML = `
+            <p>✅ Sesión limpiada correctamente</p>
+            <p>Datos eliminados:</p>
+            <ul>
+                <li>localStorage limpiado</li>
+                <li>sessionStorage limpiado</li>
+            </ul>
+            <p><a href="/login">Ir al Login</a></p>
+            <p><a href="/">Ir al Inicio</a></p>
+        `;
+        
+        console.log('Sesión limpiada');
+    </script>
+</body>
+</html>
