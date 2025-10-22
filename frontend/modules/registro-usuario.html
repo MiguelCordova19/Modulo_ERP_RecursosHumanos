@@ -1,7 +1,10 @@
+<!-- Incluir estilos específicos para el módulo -->
+<link rel="stylesheet" href="/css/modules/module-tables.css">
+
 <!-- Formulario de Registro de Usuario -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">
-        <i class="fas fa-user-plus me-2 text-primary"></i>
+        <i class="fas fa-user-plus me-2" style="color: #FF7E70;"></i>
         Registrar Usuario
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -17,7 +20,7 @@
 </div>
 
 <div class="card shadow-sm mb-4">
-    <div class="card-header bg-light">
+    <div class="card-header" style="background-color: #FF7E70; color: white; border-bottom: 3px solid #E86C5E;">
         <h5 class="mb-0">
             <i class="fas fa-info-circle me-2"></i>
             Información del Usuario
@@ -116,9 +119,308 @@
 <!-- Campo oculto para almacenar el contenido original -->
 <input type="hidden" id="contenidoOriginal" value="">
 
+<!-- Estilos específicos para el formulario de registro -->
+<style>
+    /* Aplicar colores salmón al formulario */
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #FF7E70 !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 126, 112, 0.25) !important;
+    }
+    
+    .form-label {
+        color: #212529;
+        font-weight: 500;
+    }
+    
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    /* Estilos para botones */
+    .btn-primary {
+        background-color: #FF7E70 !important;
+        border-color: #FF7E70 !important;
+        color: white !important;
+        box-shadow: 0 2px 6px rgba(255, 126, 112, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: #E86C5E !important;
+        border-color: #E86C5E !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(255, 126, 112, 0.4);
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268 !important;
+        border-color: #545b62 !important;
+        transform: translateY(-2px);
+    }
+    
+    /* Estilos para el card */
+    .card.shadow-sm {
+        box-shadow: 0 4px 12px rgba(255, 126, 112, 0.1) !important;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    /* Estilos para el header del módulo */
+    .border-bottom {
+        border-bottom: 3px solid #FFB8B0 !important;
+    }
+    
+    .h2, h2 {
+        color: #212529;
+        font-weight: 700;
+    }
+    
+    /* Estilos para campos requeridos */
+    .form-label .text-danger {
+        font-size: 0.9em;
+    }
+    
+    /* Estilos para selects */
+    .form-select {
+        cursor: pointer;
+    }
+    
+    .form-select:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+    
+    /* Estilos para campos readonly */
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #FFB8B0;
+        color: #6c757d;
+    }
+    
+    /* Animaciones suaves */
+    .form-control,
+    .form-select,
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    /* Estilos responsivos */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .btn-toolbar {
+            margin-bottom: 1rem !important;
+        }
+        
+        .btn-toolbar .btn {
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    /* Estilos para validación */
+    .form-control.is-valid,
+    .form-select.is-valid {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.44 1.44L7.4 4.5 6.46 3.56 4.23 5.79z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+</style>
+
 <script>
     // Inicializar componentes del formulario
     document.addEventListener('DOMContentLoaded', function() {
-        // Aquí se pueden inicializar componentes adicionales
+        console.log('✅ Formulario de registro de usuario inicializado');
+        
+        // Configurar validación en tiempo real
+        configurarValidacion();
+        
+        // Configurar eventos de botones
+        configurarEventos();
     });
+    
+    function configurarValidacion() {
+        // Validación de documento según tipo
+        const tipoDocSelect = document.getElementById('tipoDoc');
+        const nroDocInput = document.getElementById('nroDoc');
+        
+        tipoDocSelect.addEventListener('change', function() {
+            validarDocumento();
+        });
+        
+        nroDocInput.addEventListener('input', function() {
+            validarDocumento();
+        });
+        
+        // Validación de email
+        const emailInput = document.getElementById('email');
+        emailInput.addEventListener('input', function() {
+            validarEmail();
+        });
+        
+        // Validación de teléfono
+        const telefonoInput = document.getElementById('telefono');
+        telefonoInput.addEventListener('input', function() {
+            validarTelefono();
+        });
+    }
+    
+    function configurarEventos() {
+        // Botón siguiente
+        document.querySelector('.btn-siguiente').addEventListener('click', function() {
+            if (validarFormulario()) {
+                // Aquí iría la lógica para continuar al siguiente paso
+                showNotification('Formulario válido. Continuando...', 'success');
+            }
+        });
+        
+        // Botón cancelar
+        document.querySelector('.btn-cancelar').addEventListener('click', function() {
+            if (confirm('¿Está seguro de que desea cancelar? Se perderán los datos ingresados.')) {
+                limpiarFormulario();
+                showNotification('Formulario cancelado', 'warning');
+            }
+        });
+    }
+    
+    function validarDocumento() {
+        const tipoDoc = document.getElementById('tipoDoc').value;
+        const nroDoc = document.getElementById('nroDoc').value;
+        const nroDocInput = document.getElementById('nroDoc');
+        
+        if (!tipoDoc || !nroDoc) return;
+        
+        let esValido = false;
+        
+        switch (tipoDoc) {
+            case 'DNI':
+                esValido = /^\d{8}$/.test(nroDoc);
+                nroDocInput.placeholder = 'Ingrese 8 dígitos';
+                break;
+            case 'CE':
+                esValido = /^\d{9,12}$/.test(nroDoc);
+                nroDocInput.placeholder = 'Ingrese 9-12 dígitos';
+                break;
+            case 'PAS':
+                esValido = /^[A-Z0-9]{6,12}$/.test(nroDoc.toUpperCase());
+                nroDocInput.placeholder = 'Ingrese 6-12 caracteres';
+                break;
+        }
+        
+        if (esValido) {
+            nroDocInput.classList.remove('is-invalid');
+            nroDocInput.classList.add('is-valid');
+        } else {
+            nroDocInput.classList.remove('is-valid');
+            nroDocInput.classList.add('is-invalid');
+        }
+    }
+    
+    function validarEmail() {
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value;
+        
+        if (!email) return;
+        
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (regex.test(email)) {
+            emailInput.classList.remove('is-invalid');
+            emailInput.classList.add('is-valid');
+        } else {
+            emailInput.classList.remove('is-valid');
+            emailInput.classList.add('is-invalid');
+        }
+    }
+    
+    function validarTelefono() {
+        const telefonoInput = document.getElementById('telefono');
+        const telefono = telefonoInput.value;
+        
+        if (!telefono) return;
+        
+        const regex = /^[0-9+\-\s()]{9,15}$/;
+        
+        if (regex.test(telefono)) {
+            telefonoInput.classList.remove('is-invalid');
+            telefonoInput.classList.add('is-valid');
+        } else {
+            telefonoInput.classList.remove('is-valid');
+            telefonoInput.classList.add('is-invalid');
+        }
+    }
+    
+    function validarFormulario() {
+        const form = document.getElementById('formUsuario');
+        const inputs = form.querySelectorAll('input[required], select[required]');
+        let esValido = true;
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                input.classList.add('is-invalid');
+                esValido = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!esValido) {
+            showNotification('Por favor complete todos los campos requeridos', 'danger');
+        }
+        
+        return esValido;
+    }
+    
+    function limpiarFormulario() {
+        const form = document.getElementById('formUsuario');
+        form.reset();
+        
+        // Limpiar clases de validación
+        const inputs = form.querySelectorAll('.is-valid, .is-invalid');
+        inputs.forEach(input => {
+            input.classList.remove('is-valid', 'is-invalid');
+        });
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
 </script>
