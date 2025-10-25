@@ -1,0 +1,134 @@
+<!-- Módulo de Gestión de Empresas -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-building me-2"></i>
+            Gestión de Empresas
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button class="btn btn-primary" onclick="abrirModalNuevaEmpresaUsuario()">
+                <i class="fas fa-plus me-2"></i>Nueva Empresa
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabla de empresas -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaEmpresasUsuario">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>RUC</th>
+                            <th>Código</th>
+                            <th>Teléfono</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Datos dinámicos -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Empresa -->
+<div class="modal fade" id="modalNuevaEmpresaUsuario" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-building me-2"></i>Nueva Empresa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNuevaEmpresaUsuario">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre de la Empresa *</label>
+                            <input type="text" class="form-control" id="nombreEmpresaUsuario" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">RUC *</label>
+                            <input type="text" class="form-control" id="rucEmpresaUsuario" maxlength="11" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Código de Acceso *</label>
+                            <input type="text" class="form-control" id="codigoEmpresaUsuario" required>
+                            <small class="text-muted">Código único para acceso al portal</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="telefonoEmpresaUsuario">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="direccionEmpresaUsuario">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Estado *</label>
+                            <select class="form-select" id="estadoEmpresaUsuario" required>
+                                <option value="1">Activa</option>
+                                <option value="0">Inactiva</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarNuevaEmpresaUsuario()">
+                    <i class="fas fa-save me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    margin: 0 2px;
+}
+
+.btn-editar {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.btn-editar:hover {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-eliminar {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.btn-eliminar:hover {
+    background: #dc3545;
+    color: white;
+}
+</style>
+
+<script src="/js/modules/empresas.js"></script>
