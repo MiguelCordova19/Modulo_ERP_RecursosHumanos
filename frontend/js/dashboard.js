@@ -1,5 +1,5 @@
 // Funcionalidad del Dashboard
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeUserDropdown();
     checkAuthentication();
     loadDynamicMenus();
@@ -12,14 +12,14 @@ function refreshMenus() {
 
 async function loadModuleContent(ruta, titulo, menuId) {
     const mainContent = document.querySelector('main');
-    
+
     console.log('🔍 Cargando módulo:', ruta);
-    
+
     if (!mainContent) {
         console.error('❌ Contenedor main no encontrado');
         return;
     }
-    
+
     mainContent.innerHTML = `
         <div class="row">
             <div class="col-12 text-center py-5">
@@ -30,16 +30,16 @@ async function loadModuleContent(ruta, titulo, menuId) {
             </div>
         </div>
     `;
-    
+
     try {
         const url = `/modules/${ruta}.html`;
-        
+
         const response = await fetch(url);
-        
+
         if (response.ok) {
             const html = await response.text();
             mainContent.innerHTML = html;
-            
+
             const scripts = mainContent.querySelectorAll('script');
             scripts.forEach(script => {
                 const newScript = document.createElement('script');
@@ -51,12 +51,12 @@ async function loadModuleContent(ruta, titulo, menuId) {
                 document.body.appendChild(newScript);
                 document.body.removeChild(newScript);
             });
-            
+
         } else {
             console.warn(`⚠️ Error ${response.status}`);
             loadDefaultContent(titulo, ruta);
         }
-        
+
     } catch (error) {
         console.error('❌ Error:', error);
         showNotification('Error al cargar el módulo: ' + error.message, 'danger');
@@ -66,7 +66,7 @@ async function loadModuleContent(ruta, titulo, menuId) {
 
 function loadDefaultContent(titulo, ruta) {
     const mainContent = document.querySelector('main');
-    
+
     mainContent.innerHTML = `
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">${titulo}</h1>
@@ -187,7 +187,7 @@ function renderDynamicMenus(menus) {
     });
 
     initializeSidebarEvents();
-    
+
     console.log(`✅ ${menus.length} menús principales renderizados`);
 }
 
@@ -198,16 +198,15 @@ function createMenuElement(menu, index) {
 
     const tieneHijos = menu.hijos && menu.hijos.length > 0;
     const esNivel3 = menu.menu_nivel === 3;
-    
+
     if (tieneHijos && !esNivel3) {
         const submenuId = `submenu-${menu.menu_id}`;
         const nivelClass = menu.menu_nivel === 1 ? 'menu-dropdown' : 'menu-dropdown-sub';
         const iconSize = menu.menu_nivel === 1 ? 'collapse-icon' : 'collapse-icon-sub';
-        
+
         li.innerHTML = `
             <a class="nav-link menu-item ${nivelClass} ${menu.menu_nivel > 1 ? 'submenu-item' : ''}" href="#" 
-               data-bs-toggle="collapse" 
-               data-bs-target="#${submenuId}" 
+               data-target="#${submenuId}" 
                aria-expanded="false"
                data-menu-id="${menu.menu_id}"
                data-menu-nivel="${menu.menu_nivel}">
@@ -225,7 +224,7 @@ function createMenuElement(menu, index) {
         const indentClass = menu.menu_nivel > 1 ? 'submenu-item' : '';
         const bulletClass = menu.menu_nivel > 1 ? 'submenu-bullet' : '';
         const nivel3Class = esNivel3 ? 'submenu-nivel-3' : '';
-        
+
         li.innerHTML = `
             <a class="nav-link menu-item ${indentClass} ${nivel3Class}" 
             href="#" 
@@ -247,15 +246,14 @@ function renderSubmenus(hijos) {
     return hijos.map(hijo => {
         const tieneHijos = hijo.hijos && hijo.hijos.length > 0;
         const esNivel3 = hijo.menu_nivel === 3;
-        
+
         if (tieneHijos && !esNivel3) {
             const submenuId = `submenu-${hijo.menu_id}`;
-            
+
             return `
                 <li class="nav-item">
                     <a class="nav-link submenu-item menu-dropdown-sub" href="#"
-                       data-bs-toggle="collapse" 
-                       data-bs-target="#${submenuId}" 
+                       data-target="#${submenuId}" 
                        aria-expanded="false"
                        data-menu-id="${hijo.menu_id}"
                        data-menu-nivel="${hijo.menu_nivel}">
@@ -272,7 +270,7 @@ function renderSubmenus(hijos) {
             `;
         } else {
             const nivel3Class = esNivel3 ? 'submenu-nivel-3' : '';
-            
+
             return `
                 <li class="nav-item">
                     <a class="nav-link menu-item submenu-item ${nivel3Class}" 
@@ -289,96 +287,114 @@ function renderSubmenus(hijos) {
     }).join('');
 }
 
+// Variable global para evitar múltiples inicializaciones
+let sidebarEventsInitialized = false;
+
 function initializeSidebarEvents() {
-    // Eventos para dropdowns (estos funcionan bien)
-    const dropdownMenus = document.querySelectorAll('.menu-dropdown, .menu-dropdown-sub');
-    dropdownMenus.forEach(menu => {
-        menu.addEventListener('click', function(e) {
+    const menuContainer = document.querySelector('.sidebar .nav.flex-column');
+
+    if (!menuContainer) {
+        console.error('Contenedor de menú no encontrado');
+        return;
+    }
+
+    // Si ya está inicializado, no hacer nada
+    if (sidebarEventsInitialized) {
+        console.log('⚠️ Eventos ya inicializados, saltando...');
+        return;
+    }
+
+    // Marcar como inicializado
+    sidebarEventsInitialized = true;
+
+    // Usar delegación de eventos - UN SOLO listener para todo
+    menuContainer.addEventListener('click', function (e) {
+        // Buscar si el click fue en un dropdown
+        const dropdownItem = e.target.closest('.menu-dropdown, .menu-dropdown-sub');
+
+        if (dropdownItem) {
             e.preventDefault();
             e.stopPropagation();
-            
-            const targetId = this.getAttribute('data-bs-target');
+
+            const targetId = dropdownItem.getAttribute('data-target');
+            if (!targetId) return;
+
             const targetElement = document.querySelector(targetId);
-            const icon = this.querySelector('.collapse-icon, .collapse-icon-sub');
-            
-            if (targetElement) {
-                if (targetElement.classList.contains('show')) {
-                    targetElement.classList.remove('show');
-                    this.setAttribute('aria-expanded', 'false');
-                    if (icon) icon.style.transform = 'rotate(0deg)';
-                } else {
-                    const parent = this.closest('ul');
-                    if (parent) {
-                        parent.querySelectorAll('.collapse.show').forEach(collapse => {
-                            if (collapse.id !== targetId.substring(1)) {
-                                collapse.classList.remove('show');
-                                const btn = parent.querySelector(`[data-bs-target="#${collapse.id}"]`);
-                                if (btn) {
-                                    btn.setAttribute('aria-expanded', 'false');
-                                    const btnIcon = btn.querySelector('.collapse-icon, .collapse-icon-sub');
-                                    if (btnIcon) btnIcon.style.transform = 'rotate(0deg)';
+            if (!targetElement) return;
+
+            const icon = dropdownItem.querySelector('.collapse-icon, .collapse-icon-sub');
+            const isOpen = targetElement.classList.contains('show');
+
+            console.log(`🔄 Toggle menú: ${targetId}, Estado actual: ${isOpen ? 'ABIERTO' : 'CERRADO'}`);
+
+            if (isOpen) {
+                // CERRAR
+                targetElement.classList.remove('show');
+                dropdownItem.setAttribute('aria-expanded', 'false');
+                if (icon) {
+                    icon.style.transform = 'rotate(0deg)';
+                }
+                console.log(`✅ Menú ${targetId} CERRADO`);
+            } else {
+                // ABRIR (y cerrar hermanos)
+                const parent = dropdownItem.closest('ul');
+                if (parent) {
+                    // Cerrar todos los hermanos
+                    const siblings = parent.querySelectorAll(':scope > .nav-item > .collapse.show');
+                    siblings.forEach(sibling => {
+                        if (sibling.id !== targetId.substring(1)) {
+                            sibling.classList.remove('show');
+                            const siblingBtn = parent.querySelector(`[data-target="#${sibling.id}"]`);
+                            if (siblingBtn) {
+                                siblingBtn.setAttribute('aria-expanded', 'false');
+                                const siblingIcon = siblingBtn.querySelector('.collapse-icon, .collapse-icon-sub');
+                                if (siblingIcon) {
+                                    siblingIcon.style.transform = 'rotate(0deg)';
                                 }
                             }
-                        });
-                    }
-                    
-                    targetElement.classList.add('show');
-                    this.setAttribute('aria-expanded', 'true');
-                    if (icon) icon.style.transform = 'rotate(180deg)';
+                        }
+                    });
                 }
+
+                targetElement.classList.add('show');
+                dropdownItem.setAttribute('aria-expanded', 'true');
+                if (icon) {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+                console.log(`✅ Menú ${targetId} ABIERTO`);
             }
-        });
-    });
 
-    // DELEGACIÓN DE EVENTOS para menús clickables
-    const menuContainer = document.querySelector('.sidebar .nav.flex-column');
-    
-    if (menuContainer) {
-        // Remover listeners anteriores
-        menuContainer.removeEventListener('click', handleMenuClick);
-        // Agregar nuevo listener
-        menuContainer.addEventListener('click', handleMenuClick);
-        
-        console.log('✅ Eventos de menú inicializados con delegación');
-    }
-}
+            return; // Detener propagación
+        }
 
-function handleMenuClick(e) {
-    const menuItem = e.target.closest('.menu-item:not(.menu-dropdown):not(.menu-dropdown-sub)');
-    
-    if (!menuItem) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const menuId = menuItem.getAttribute('data-menu-id');
-    const menuRuta = menuItem.getAttribute('data-ruta');
-    const menuNombre = menuItem.querySelector('span')?.textContent.trim();
-    const menuNivel = menuItem.getAttribute('data-menu-nivel');
-    
-    console.log('📱 Menú seleccionado:', {
-        id: menuId,
-        ruta: menuRuta,
-        nombre: menuNombre,
-        nivel: menuNivel
-    });
-    
-    // Remover active de todos
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Marcar como activo
-    menuItem.classList.add('active');
-    
-    // Cargar contenido
-    if (menuRuta && menuRuta !== '' && menuRuta !== '#') {
-        console.log('🚀 Iniciando carga del módulo...');
-        loadModuleContent(menuRuta, menuNombre, menuId);
-        showNotification(`Cargando: ${menuNombre}`, 'info');
-    } else {
-        console.warn('⚠️ No hay ruta válida:', menuRuta);
-    }
+        // Si no es dropdown, verificar si es un menú clickable
+        const menuItem = e.target.closest('.menu-item:not(.menu-dropdown):not(.menu-dropdown-sub)');
+
+        if (menuItem) {
+            e.preventDefault();
+
+            const menuRuta = menuItem.getAttribute('data-ruta');
+            const menuNombre = menuItem.querySelector('span')?.textContent.trim();
+
+            console.log('📱 Menú clickable:', menuNombre);
+
+            // Remover active de todos
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Marcar como activo
+            menuItem.classList.add('active');
+
+            // Cargar contenido
+            if (menuRuta && menuRuta !== '' && menuRuta !== '#') {
+                loadModuleContent(menuRuta, menuNombre);
+                showNotification(`Cargando: ${menuNombre}`, 'info');
+            }
+        }
+    }, true); // true = useCapture para capturar el evento antes
+
+    console.log('✅ Eventos de menú inicializados');
 }
 
 function showNotification(message, type = 'info') {
@@ -389,9 +405,9 @@ function showNotification(message, type = 'info') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
@@ -408,36 +424,84 @@ function initializeUserDropdown() {
 
 function checkAuthentication() {
     const user = localStorage.getItem('user');
-    
+
     if (!user) {
         console.log('No hay sesión activa, redirigiendo al login...');
-        window.location.href = '/login';
+        window.location.href = '/login.html';
         return;
     }
-    
+
     try {
         const userData = JSON.parse(user);
         console.log('Usuario autenticado:', userData.usuario);
-        
-        // Actualizar el nombre del usuario en el dropdown
-        const userNameElement = document.querySelector('#userDropdown span');
-        if (userNameElement && userData.nombre_completo) {
-            userNameElement.textContent = userData.nombre_completo;
+
+        // Actualizar el nombre del usuario en el dropdown (en blanco)
+        const userNameElement = document.getElementById('nombreUsuarioHeader');
+        if (userNameElement) {
+            // Soportar ambos formatos: camelCase y snake_case
+            const nombreCompleto = userData.nombreCompleto || userData.nombre_completo || userData.usuario || 'Usuario';
+            userNameElement.textContent = nombreCompleto;
+            userNameElement.style.color = 'white';
         }
+
+        // Cargar información de la empresa del usuario
+        cargarInformacionEmpresa(userData);
     } catch (error) {
         console.error('Error al parsear datos de usuario:', error);
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/login.html';
     }
+}
+
+function cargarInformacionEmpresa(userData) {
+    // Obtener empresa del usuario desde localStorage o usar default
+    const empresasData = localStorage.getItem('empresas_data');
+    let nombreEmpresa = 'EMPRESA';
+    let subtituloEmpresa = 'SISTEMA ERP';
+
+    if (empresasData) {
+        try {
+            const empresas = JSON.parse(empresasData);
+            // Por ahora usar la primera empresa, luego se puede relacionar con el usuario
+            if (empresas.length > 0) {
+                const empresa = empresas[0];
+                nombreEmpresa = empresa.nombre.split(' ')[0]; // Primera palabra
+                subtituloEmpresa = empresa.nombre.split(' ').slice(1).join(' ') || 'SISTEMA ERP';
+            }
+        } catch (error) {
+            console.error('Error al cargar empresas:', error);
+        }
+    }
+
+    // Si el usuario tiene empresa asignada, usarla
+    if (userData.empresa) {
+        const palabras = userData.empresa.split(' ');
+        nombreEmpresa = palabras[0];
+        subtituloEmpresa = palabras.slice(1).join(' ') || 'SISTEMA ERP';
+    }
+
+    // Actualizar el sidebar con el nombre de la empresa
+    const nombreEmpresaElement = document.getElementById('nombreEmpresaSidebar');
+    const subtituloEmpresaElement = document.getElementById('subtituloEmpresa');
+
+    if (nombreEmpresaElement) {
+        nombreEmpresaElement.textContent = nombreEmpresa;
+    }
+
+    if (subtituloEmpresaElement) {
+        subtituloEmpresaElement.textContent = subtituloEmpresa;
+    }
+
+    console.log('✅ Empresa cargada:', nombreEmpresa, subtituloEmpresa);
 }
 
 function logout() {
     localStorage.removeItem('user');
     sessionStorage.clear();
     showNotification('Sesión cerrada exitosamente', 'success');
-    
+
     setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/index.html';
     }, 1000);
 }
 
