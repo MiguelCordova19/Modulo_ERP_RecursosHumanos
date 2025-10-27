@@ -454,45 +454,38 @@ function checkAuthentication() {
 }
 
 function cargarInformacionEmpresa(userData) {
-    // Obtener empresa del usuario desde localStorage o usar default
-    const empresasData = localStorage.getItem('empresas_data');
-    let nombreEmpresa = 'EMPRESA';
-    let subtituloEmpresa = 'SISTEMA ERP';
-
-    if (empresasData) {
-        try {
-            const empresas = JSON.parse(empresasData);
-            // Por ahora usar la primera empresa, luego se puede relacionar con el usuario
-            if (empresas.length > 0) {
-                const empresa = empresas[0];
-                nombreEmpresa = empresa.nombre.split(' ')[0]; // Primera palabra
-                subtituloEmpresa = empresa.nombre.split(' ').slice(1).join(' ') || 'SISTEMA ERP';
-            }
-        } catch (error) {
-            console.error('Error al cargar empresas:', error);
-        }
+    // Obtener el nombre de la empresa del usuario logueado
+    // El backend retorna empresaNombre o empresa_nombre del JOIN
+    let nombreEmpresaCompleto = userData.empresaNombre || userData.empresa_nombre || userData.empresa || 'EMPRESA SISTEMA';
+    
+    // Dividir el nombre de la empresa para el header y sidebar
+    const palabras = nombreEmpresaCompleto.trim().split(' ');
+    const nombreEmpresa = palabras[0]; // Primera palabra para el sidebar
+    const subtituloEmpresa = palabras.slice(1).join(' ') || 'SISTEMA ERP'; // Resto para subtítulo
+    
+    // Actualizar el HEADER superior con el nombre completo de la empresa
+    const nombreEmpresaHeaderElement = document.getElementById('nombreEmpresaHeader');
+    if (nombreEmpresaHeaderElement) {
+        nombreEmpresaHeaderElement.textContent = nombreEmpresaCompleto;
     }
-
-    // Si el usuario tiene empresa asignada, usarla
-    if (userData.empresa) {
-        const palabras = userData.empresa.split(' ');
-        nombreEmpresa = palabras[0];
-        subtituloEmpresa = palabras.slice(1).join(' ') || 'SISTEMA ERP';
-    }
-
-    // Actualizar el sidebar con el nombre de la empresa
-    const nombreEmpresaElement = document.getElementById('nombreEmpresaSidebar');
+    
+    // Actualizar el SIDEBAR con el nombre dividido
+    const nombreEmpresaSidebarElement = document.getElementById('nombreEmpresaSidebar');
     const subtituloEmpresaElement = document.getElementById('subtituloEmpresa');
-
-    if (nombreEmpresaElement) {
-        nombreEmpresaElement.textContent = nombreEmpresa;
+    
+    if (nombreEmpresaSidebarElement) {
+        nombreEmpresaSidebarElement.textContent = nombreEmpresa;
     }
-
+    
     if (subtituloEmpresaElement) {
         subtituloEmpresaElement.textContent = subtituloEmpresa;
     }
-
-    console.log('✅ Empresa cargada:', nombreEmpresa, subtituloEmpresa);
+    
+    console.log('✅ Empresa cargada:', {
+        header: nombreEmpresaCompleto,
+        sidebar: nombreEmpresa,
+        subtitulo: subtituloEmpresa
+    });
 }
 
 function logout() {

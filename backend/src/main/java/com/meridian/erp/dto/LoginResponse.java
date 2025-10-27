@@ -11,5 +11,8 @@ public class LoginResponse {
     private String nombreCompleto;
     private String correo;
     private String empresa;
+    private Long empresaId;
+    private String empresaNombre;
     private Integer estado;
+    private Integer primerLogin;
 }

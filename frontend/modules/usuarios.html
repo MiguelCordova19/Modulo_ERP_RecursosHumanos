@@ -4,7 +4,7 @@
         Gestión de Usuarios
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-primary" onclick="abrirFormularioNuevoUsuario()">
+        <button type="button" class="btn btn-primary" onclick="usuarios.abrirRegistroUsuario()">
             <i class="fas fa-plus me-2"></i>
             Nuevo Usuario
         </button>
@@ -32,7 +32,7 @@
                                     <th>Usuario</th>
                                     <th>Nombre Completo</th>
                                     <th>Correo</th>
-                                    <th>Sede</th>
+                                    <th>Empresa</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -47,7 +47,7 @@
                                     <th><input type="text" class="form-control form-control-sm"
                                             placeholder="Buscar por Correo..."></th>
                                     <th><input type="text" class="form-control form-control-sm"
-                                            placeholder="Buscar por Sede..."></th>
+                                            placeholder="Buscar por Empresa..."></th>
                                     <th><input type="text" class="form-control form-control-sm"
                                             placeholder="Buscar por Estado..."></th>
                                     <th></th>
@@ -59,204 +59,6 @@
                         </table>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Formulario de nuevo usuario (oculto inicialmente) -->
-    <div id="formulario-usuario" class="row" style="display: none;">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-user-plus me-2"></i>
-                        Registrar Usuario
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="form-nuevo-usuario">
-                        <!-- Información del Usuario -->
-                        <div class="mb-4">
-                            <h6 class="text-muted mb-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Información del Usuario
-                            </h6>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="empresa" class="form-label">Empresa <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select" id="empresa" required>
-                                        <option value="">Seleccionar empresa...</option>
-                                        <option value="1">EMPRESA_TEST_PLANILLA</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="sede" class="form-label">Sede <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="sede" required>
-                                        <option value="">Seleccionar sede...</option>
-                                        <option value="1">Sede Principal</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="tipo-doc" class="form-label">Tipo Doc. <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select" id="tipo-doc" required>
-                                        <option value="">Seleccionar...</option>
-                                        <option value="1">DNI</option>
-                                        <option value="2">Pasaporte</option>
-                                        <option value="3">Carnet de Extranjería</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="nro-doc" class="form-label">Nro Doc. <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="nro-doc"
-                                        placeholder="Ingrese número de documento" required>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="fecha-nacimiento" class="form-label">Fecha Nacimiento <span
-                                            class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="fecha-nacimiento" required>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="nombres" class="form-label">Nombres <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="nombres" placeholder="Ingrese nombres"
-                                        required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="apellidos" class="form-label">Apellidos <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="apellidos"
-                                        placeholder="Ingrese apellidos" required>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="rol" class="form-label">Rol <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="rol" required>
-                                        <option value="">Seleccionar rol...</option>
-                                        <option value="1">Administrador</option>
-                                        <option value="2">Usuario</option>
-                                        <option value="3">Supervisor</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="puesto" class="form-label">Puesto <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select" id="puesto" required>
-                                        <option value="">Seleccionar puesto...</option>
-                                        <option value="1">Gerente</option>
-                                        <option value="2">Analista</option>
-                                        <option value="3">Asistente</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="telefono" class="form-label">Teléfono <span
-                                            class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" id="telefono" placeholder="Ingrese teléfono"
-                                        required>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-8 mb-3">
-                                    <label for="email" class="form-label">E-mail <span
-                                            class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="email"
-                                        placeholder="Ingrese correo electrónico" required>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="estado" class="form-label">Estado <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select" id="estado" required>
-                                        <option value="1">Activo</option>
-                                        <option value="0">Inactivo</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Botones de acción -->
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-secondary" onclick="cancelarFormulario()">
-                                <i class="fas fa-times me-2"></i>
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-arrow-right me-2"></i>
-                                Siguiente
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para credenciales de usuario -->
-<div class="modal fade" id="modalCredenciales" tabindex="-1" aria-labelledby="modalCredencialesLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="modalCredencialesLabel">
-                    <i class="fas fa-key me-2"></i>
-                    Credenciales de Acceso
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-3">Complete las credenciales de acceso para el nuevo usuario:</p>
-
-                <form id="form-credenciales">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Nombre de Usuario <span
-                                class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="username" placeholder="Ingrese nombre de usuario"
-                            required>
-                        <div class="form-text">El nombre de usuario debe ser único en el sistema</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password" placeholder="Ingrese contraseña"
-                                required>
-                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
-                                <i class="fas fa-eye" id="togglePasswordIcon"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">Mínimo 6 caracteres, se recomienda incluir números y símbolos</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="confirm-password" class="form-label">Confirmar Contraseña <span
-                                class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="confirm-password"
-                            placeholder="Confirme la contraseña" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>
-                    Cancelar
-                </button>
-                <button type="button" class="btn btn-success" onclick="guardarUsuario()">
-                    <i class="fas fa-save me-2"></i>
-                    Guardar Usuario
-                </button>
             </div>
         </div>
     </div>

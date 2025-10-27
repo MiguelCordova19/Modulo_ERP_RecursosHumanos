@@ -59,7 +59,17 @@ public class Usuario {
     @Column(name = "tu_password", length = 255)
     private String password;
     
+    @Column(name = "iu_primerlogin")
+    private Integer primerLogin; // 1 = debe cambiar contraseña, 0 = ya cambió
+    
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "iu_empresa", insertable = false, updatable = false)
     private Empresa empresa;
+    
+    // Campos transitorios para datos del JOIN (no se mapean a la BD)
+    @Transient
+    private String empresaNombre;
+    
+    @Transient
+    private String rolDescripcion;
 }
