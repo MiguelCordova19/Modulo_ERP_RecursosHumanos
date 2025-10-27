@@ -45,6 +45,7 @@ public class AuthService {
         
         // Obtener nombre de empresa (manejo seguro)
         String empresaNombre = "EMPRESA TEST";
+        Long empresaId = usuario.getEmpresaId();
         try {
             if (usuario.getEmpresa() != null && usuario.getEmpresa().getDescripcion() != null) {
                 empresaNombre = usuario.getEmpresa().getDescripcion();
@@ -54,13 +55,19 @@ public class AuthService {
             System.out.println("Advertencia: No se pudo cargar la empresa del usuario");
         }
         
+        // Obtener primerLogin (por defecto 0 si es null)
+        Integer primerLogin = usuario.getPrimerLogin() != null ? usuario.getPrimerLogin() : 0;
+        
         LoginResponse response = new LoginResponse(
             usuario.getId(),
             usuario.getUsuario(),
             nombreCompleto,
             usuario.getCorreo(),
             empresaNombre,
-            usuario.getEstado()
+            empresaId,
+            empresaNombre,
+            usuario.getEstado(),
+            primerLogin
         );
         
         return Optional.of(response);

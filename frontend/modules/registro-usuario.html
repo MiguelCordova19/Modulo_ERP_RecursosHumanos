@@ -8,13 +8,9 @@
         Registrar Usuario
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-primary btn-siguiente">
-            <i class="fas fa-save me-1"></i>
-            Siguiente
-        </button>
-        <button type="button" class="btn btn-secondary ms-2 btn-cancelar">
-            <i class="fas fa-times me-1"></i>
-            Cancelar
+        <button type="button" class="btn btn-secondary" onclick="registroUsuario.volverALista()">
+            <i class="fas fa-arrow-left me-1"></i>
+            Volver a Lista
         </button>
     </div>
 </div>
@@ -28,19 +24,18 @@
     </div>
     <div class="card-body">
         <form id="formUsuario">
+            <!-- Empresa oculta - se toma del usuario logueado -->
+            <input type="hidden" id="empresa">
+            <input type="hidden" id="sede">
+            
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="empresa" class="form-label">Empresa: <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="empresa" value="EMPRESA_TEST_PLANILLA" readonly>
+                    <label for="empresaNombre" class="form-label">Empresa:</label>
+                    <input type="text" class="form-control" id="empresaNombre" readonly>
                 </div>
                 <div class="col-md-6">
-                    <label for="sede" class="form-label">Sede: <span class="text-danger">*</span></label>
-                    <select class="form-select" id="sede" required>
-                        <option value="" selected disabled>--SELECCIONE--</option>
-                        <option value="1">Lima</option>
-                        <option value="2">Arequipa</option>
-                        <option value="3">Trujillo</option>
-                    </select>
+                    <label for="fechaNacimiento" class="form-label">Fecha Nacimiento: <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="fechaNacimiento" required>
                 </div>
             </div>
             
@@ -49,9 +44,6 @@
                     <label for="tipoDoc" class="form-label">Tipo Doc.: <span class="text-danger">*</span></label>
                     <select class="form-select" id="tipoDoc" required>
                         <option value="" selected disabled>--SELECCIONE--</option>
-                        <option value="DNI">DNI</option>
-                        <option value="CE">CE</option>
-                        <option value="PAS">PASAPORTE</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -76,19 +68,12 @@
                     <label for="rol" class="form-label">Rol: <span class="text-danger">*</span></label>
                     <select class="form-select" id="rol" required>
                         <option value="" selected disabled>--SELECCIONE--</option>
-                        <option value="1">Administrador</option>
-                        <option value="2">Usuario</option>
-                        <option value="3">Supervisor</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="puesto" class="form-label">Puesto: <span class="text-danger">*</span></label>
-                    <select class="form-select" id="puesto" required>
-                        <option value="" selected disabled>--SELECCIONE--</option>
-                        <option value="1">Gerente</option>
-                        <option value="2">Analista</option>
-                        <option value="3">Asistente</option>
-                    </select>
+                    <label for="puesto" class="form-label">Puesto: <small class="text-muted">(Opcional)</small></label>
+                    <input type="text" class="form-control" id="puesto" placeholder="Ej: Gerente, Analista, etc." disabled>
+                    <small class="text-muted">Campo informativo - Se implementará con tabla de puestos</small>
                 </div>
             </div>
             
@@ -103,21 +88,81 @@
                 </div>
             </div>
             
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="estado" class="form-label">Estado: <span class="text-danger">*</span></label>
-                    <select class="form-select" id="estado" required>
-                        <option value="1" selected>Activo</option>
-                        <option value="0">Inactivo</option>
-                    </select>
-                </div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Nota:</strong> El usuario se creará con estado <strong>Activo</strong> por defecto.
+            </div>
+            
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" onclick="registroUsuario.cancelarFormulario()">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="registroUsuario.guardarUsuario()">
+                    <i class="fas fa-arrow-right me-1"></i>
+                    Siguiente
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Campo oculto para almacenar el contenido original -->
-<input type="hidden" id="contenidoOriginal" value="">
+<!-- Modal de Credenciales -->
+<div class="modal fade" id="modalCredenciales" tabindex="-1" aria-labelledby="modalCredencialesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #28a745; color: white;">
+                <h5 class="modal-title" id="modalCredencialesLabel">
+                    <i class="fas fa-key me-2"></i>
+                    Configurar Credenciales de Acceso
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Complete las credenciales de acceso para el nuevo usuario:</p>
+                
+                <form id="formCredenciales">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nombre de Usuario: <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" placeholder="usuario.ejemplo" required>
+                        <small class="text-muted">Se generó automáticamente basado en el nombre</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña: <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" placeholder="Mínimo 6 caracteres" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="registroUsuario.togglePassword()">
+                                <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Mínimo 6 caracteres</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirmar Contraseña: <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Repita la contraseña" required>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Importante:</strong> El usuario deberá cambiar su contraseña en el primer inicio de sesión.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-success" onclick="registroUsuario.guardarUsuarioFinal()">
+                    <i class="fas fa-save me-1"></i>
+                    Guardar Usuario
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Estilos específicos para el formulario de registro -->
 <style>
@@ -187,21 +232,6 @@
         font-weight: 700;
     }
     
-    /* Estilos para campos requeridos */
-    .form-label .text-danger {
-        font-size: 0.9em;
-    }
-    
-    /* Estilos para selects */
-    .form-select {
-        cursor: pointer;
-    }
-    
-    .form-select:disabled {
-        background-color: #e9ecef;
-        cursor: not-allowed;
-    }
-    
     /* Estilos para campos readonly */
     .form-control[readonly] {
         background-color: #f8f9fa;
@@ -235,192 +265,13 @@
     .form-control.is-valid,
     .form-select.is-valid {
         border-color: #28a745;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.44 1.44L7.4 4.5 6.46 3.56 4.23 5.79z'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
     
     .form-control.is-invalid,
     .form-select.is-invalid {
         border-color: #dc3545;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
 </style>
 
-<script>
-    // Inicializar componentes del formulario
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ Formulario de registro de usuario inicializado');
-        
-        // Configurar validación en tiempo real
-        configurarValidacion();
-        
-        // Configurar eventos de botones
-        configurarEventos();
-    });
-    
-    function configurarValidacion() {
-        // Validación de documento según tipo
-        const tipoDocSelect = document.getElementById('tipoDoc');
-        const nroDocInput = document.getElementById('nroDoc');
-        
-        tipoDocSelect.addEventListener('change', function() {
-            validarDocumento();
-        });
-        
-        nroDocInput.addEventListener('input', function() {
-            validarDocumento();
-        });
-        
-        // Validación de email
-        const emailInput = document.getElementById('email');
-        emailInput.addEventListener('input', function() {
-            validarEmail();
-        });
-        
-        // Validación de teléfono
-        const telefonoInput = document.getElementById('telefono');
-        telefonoInput.addEventListener('input', function() {
-            validarTelefono();
-        });
-    }
-    
-    function configurarEventos() {
-        // Botón siguiente
-        document.querySelector('.btn-siguiente').addEventListener('click', function() {
-            if (validarFormulario()) {
-                // Aquí iría la lógica para continuar al siguiente paso
-                showNotification('Formulario válido. Continuando...', 'success');
-            }
-        });
-        
-        // Botón cancelar
-        document.querySelector('.btn-cancelar').addEventListener('click', function() {
-            if (confirm('¿Está seguro de que desea cancelar? Se perderán los datos ingresados.')) {
-                limpiarFormulario();
-                showNotification('Formulario cancelado', 'warning');
-            }
-        });
-    }
-    
-    function validarDocumento() {
-        const tipoDoc = document.getElementById('tipoDoc').value;
-        const nroDoc = document.getElementById('nroDoc').value;
-        const nroDocInput = document.getElementById('nroDoc');
-        
-        if (!tipoDoc || !nroDoc) return;
-        
-        let esValido = false;
-        
-        switch (tipoDoc) {
-            case 'DNI':
-                esValido = /^\d{8}$/.test(nroDoc);
-                nroDocInput.placeholder = 'Ingrese 8 dígitos';
-                break;
-            case 'CE':
-                esValido = /^\d{9,12}$/.test(nroDoc);
-                nroDocInput.placeholder = 'Ingrese 9-12 dígitos';
-                break;
-            case 'PAS':
-                esValido = /^[A-Z0-9]{6,12}$/.test(nroDoc.toUpperCase());
-                nroDocInput.placeholder = 'Ingrese 6-12 caracteres';
-                break;
-        }
-        
-        if (esValido) {
-            nroDocInput.classList.remove('is-invalid');
-            nroDocInput.classList.add('is-valid');
-        } else {
-            nroDocInput.classList.remove('is-valid');
-            nroDocInput.classList.add('is-invalid');
-        }
-    }
-    
-    function validarEmail() {
-        const emailInput = document.getElementById('email');
-        const email = emailInput.value;
-        
-        if (!email) return;
-        
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (regex.test(email)) {
-            emailInput.classList.remove('is-invalid');
-            emailInput.classList.add('is-valid');
-        } else {
-            emailInput.classList.remove('is-valid');
-            emailInput.classList.add('is-invalid');
-        }
-    }
-    
-    function validarTelefono() {
-        const telefonoInput = document.getElementById('telefono');
-        const telefono = telefonoInput.value;
-        
-        if (!telefono) return;
-        
-        const regex = /^[0-9+\-\s()]{9,15}$/;
-        
-        if (regex.test(telefono)) {
-            telefonoInput.classList.remove('is-invalid');
-            telefonoInput.classList.add('is-valid');
-        } else {
-            telefonoInput.classList.remove('is-valid');
-            telefonoInput.classList.add('is-invalid');
-        }
-    }
-    
-    function validarFormulario() {
-        const form = document.getElementById('formUsuario');
-        const inputs = form.querySelectorAll('input[required], select[required]');
-        let esValido = true;
-        
-        inputs.forEach(input => {
-            if (!input.value.trim()) {
-                input.classList.add('is-invalid');
-                esValido = false;
-            } else {
-                input.classList.remove('is-invalid');
-            }
-        });
-        
-        if (!esValido) {
-            showNotification('Por favor complete todos los campos requeridos', 'danger');
-        }
-        
-        return esValido;
-    }
-    
-    function limpiarFormulario() {
-        const form = document.getElementById('formUsuario');
-        form.reset();
-        
-        // Limpiar clases de validación
-        const inputs = form.querySelectorAll('.is-valid, .is-invalid');
-        inputs.forEach(input => {
-            input.classList.remove('is-valid', 'is-invalid');
-        });
-    }
-    
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 5000);
-    }
-</script>
+<!-- Incluir el JavaScript específico del módulo -->
+<script src="/js/modules/registro-usuario.js"></script>

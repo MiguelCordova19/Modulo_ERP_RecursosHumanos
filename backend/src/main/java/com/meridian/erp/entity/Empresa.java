@@ -16,6 +16,15 @@ public class Empresa {
     @Column(name = "te_descripcion", length = 100)
     private String descripcion;
     
+    @Column(name = "te_ruc", length = 11)
+    private String ruc;
+    
+    @Column(name = "te_telefono", length = 20)
+    private String telefono;
+    
+    @Column(name = "te_direccion", length = 255)
+    private String direccion;
+    
     @Column(name = "ie_estado")
     private Integer estado;
 }
