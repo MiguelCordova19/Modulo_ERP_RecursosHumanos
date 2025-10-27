@@ -1,0 +1,520 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict 4Wcv8jNFNG1L6alFsoPJZfD8n6AGE4aL2q4O09CYq4zKHqO1JtCnJlQzOdGHoOn
+
+-- Dumped from database version 15.14
+-- Dumped by pg_dump version 15.14
+
+-- Started on 2025-10-24 21:20:35 UTC
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+DROP DATABASE IF EXISTS root;
+--
+-- TOC entry 3456 (class 1262 OID 16384)
+-- Name: root; Type: DATABASE; Schema: -; Owner: root
+--
+
+CREATE DATABASE root WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
+
+
+ALTER DATABASE root OWNER TO root;
+
+\unrestrict 4Wcv8jNFNG1L6alFsoPJZfD8n6AGE4aL2q4O09CYq4zKHqO1JtCnJlQzOdGHoOn
+\connect root
+\restrict 4Wcv8jNFNG1L6alFsoPJZfD8n6AGE4aL2q4O09CYq4zKHqO1JtCnJlQzOdGHoOn
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 235 (class 1255 OID 24595)
+-- Name: sp_obtener_menus_activos(refcursor); Type: PROCEDURE; Schema: public; Owner: root
+--
+
+CREATE PROCEDURE public.sp_obtener_menus_activos(INOUT resultado refcursor DEFAULT 'menu_cursor'::refcursor)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    OPEN resultado FOR
+    SELECT 
+        m.Menu_Id,
+        m.Menu_Ruta,
+        m.Menu_Nombre,
+        m.Menu_Icon,
+        m.Menu_Estado,
+        m.menu_padre,
+        m.menu_nivel,
+        m.menu_posicion
+    FROM RRHH_MMENU m
+    WHERE m.Menu_Estado = 1
+    ORDER BY m.menu_posicion ASC;
+END;
+$$;
+
+
+ALTER PROCEDURE public.sp_obtener_menus_activos(INOUT resultado refcursor) OWNER TO root;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 221 (class 1259 OID 24604)
+-- Name: rrhh_mempresa; Type: TABLE; Schema: public; Owner: root
+--
+
+CREATE TABLE public.rrhh_mempresa (
+    imempresa_id bigint NOT NULL,
+    te_descripcion character varying(100),
+    ie_estado integer
+);
+
+
+ALTER TABLE public.rrhh_mempresa OWNER TO root;
+
+--
+-- TOC entry 220 (class 1259 OID 24603)
+-- Name: rrhh_mempresa_imempresa_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.rrhh_mempresa_imempresa_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.rrhh_mempresa_imempresa_id_seq OWNER TO root;
+
+--
+-- TOC entry 3457 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: rrhh_mempresa_imempresa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+--
+
+ALTER SEQUENCE public.rrhh_mempresa_imempresa_id_seq OWNED BY public.rrhh_mempresa.imempresa_id;
+
+
+--
+-- TOC entry 215 (class 1259 OID 24577)
+-- Name: rrhh_mmenu; Type: TABLE; Schema: public; Owner: root
+--
+
+CREATE TABLE public.rrhh_mmenu (
+    menu_id integer NOT NULL,
+    menu_ruta character varying(150),
+    menu_icon character varying(50),
+    menu_nombre character varying(150),
+    menu_estado integer,
+    menu_padre integer,
+    menu_nivel integer,
+    menu_posicion integer
+);
+
+
+ALTER TABLE public.rrhh_mmenu OWNER TO root;
+
+--
+-- TOC entry 214 (class 1259 OID 24576)
+-- Name: rrhh_mmenu_menu_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.rrhh_mmenu_menu_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.rrhh_mmenu_menu_id_seq OWNER TO root;
+
+--
+-- TOC entry 3458 (class 0 OID 0)
+-- Dependencies: 214
+-- Name: rrhh_mmenu_menu_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+--
+
+ALTER SEQUENCE public.rrhh_mmenu_menu_id_seq OWNED BY public.rrhh_mmenu.menu_id;
+
+
+--
+-- TOC entry 219 (class 1259 OID 24597)
+-- Name: rrhh_mrol; Type: TABLE; Schema: public; Owner: root
+--
+
+CREATE TABLE public.rrhh_mrol (
+    imrol_id integer NOT NULL,
+    tr_descripcion character varying(100) NOT NULL,
+    ir_estado integer NOT NULL,
+    ir_empresa integer
+);
+
+
+ALTER TABLE public.rrhh_mrol OWNER TO root;
+
+--
+-- TOC entry 218 (class 1259 OID 24596)
+-- Name: rrhh_mrol_imrol_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.rrhh_mrol_imrol_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.rrhh_mrol_imrol_id_seq OWNER TO root;
+
+--
+-- TOC entry 3459 (class 0 OID 0)
+-- Dependencies: 218
+-- Name: rrhh_mrol_imrol_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+--
+
+ALTER SEQUENCE public.rrhh_mrol_imrol_id_seq OWNED BY public.rrhh_mrol.imrol_id;
+
+
+--
+-- TOC entry 217 (class 1259 OID 24585)
+-- Name: rrhh_mtipodocumento; Type: TABLE; Schema: public; Owner: root
+--
+
+CREATE TABLE public.rrhh_mtipodocumento (
+    imtipodoc_id integer NOT NULL,
+    ttd_codsunat character varying(10),
+    ttd_descripcion character varying(100),
+    ttd_abreviatura character varying(100)
+);
+
+
+ALTER TABLE public.rrhh_mtipodocumento OWNER TO root;
+
+--
+-- TOC entry 216 (class 1259 OID 24584)
+-- Name: rrhh_mtipodocumento_imtipodoc_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.rrhh_mtipodocumento_imtipodoc_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.rrhh_mtipodocumento_imtipodoc_id_seq OWNER TO root;
+
+--
+-- TOC entry 3460 (class 0 OID 0)
+-- Dependencies: 216
+-- Name: rrhh_mtipodocumento_imtipodoc_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+--
+
+ALTER SEQUENCE public.rrhh_mtipodocumento_imtipodoc_id_seq OWNED BY public.rrhh_mtipodocumento.imtipodoc_id;
+
+
+--
+-- TOC entry 223 (class 1259 OID 24611)
+-- Name: rrhh_musuario; Type: TABLE; Schema: public; Owner: root
+--
+
+CREATE TABLE public.rrhh_musuario (
+    imusuario_id bigint NOT NULL,
+    tu_apellidopaterno character varying(50),
+    tu_apellidomaterno character varying(50),
+    tu_nombres character varying(50),
+    iu_empresa bigint,
+    iu_sede bigint,
+    iu_tipodocumento integer,
+    tu_nrodocumento character varying(20),
+    fu_fechanacimiento date,
+    iu_rol integer,
+    iu_puesto integer,
+    tu_nrocelular character varying(20),
+    tu_correo character varying(50),
+    iu_estado integer,
+    tu_usuario character varying(50),
+    tu_password character varying(255)
+);
+
+
+ALTER TABLE public.rrhh_musuario OWNER TO root;
+
+--
+-- TOC entry 222 (class 1259 OID 24610)
+-- Name: rrhh_musuario_imusuario_id_seq; Type: SEQUENCE; Schema: public; Owner: root
+--
+
+CREATE SEQUENCE public.rrhh_musuario_imusuario_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.rrhh_musuario_imusuario_id_seq OWNER TO root;
+
+--
+-- TOC entry 3461 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: rrhh_musuario_imusuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: root
+--
+
+ALTER SEQUENCE public.rrhh_musuario_imusuario_id_seq OWNED BY public.rrhh_musuario.imusuario_id;
+
+
+--
+-- TOC entry 3284 (class 2604 OID 24607)
+-- Name: rrhh_mempresa imempresa_id; Type: DEFAULT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mempresa ALTER COLUMN imempresa_id SET DEFAULT nextval('public.rrhh_mempresa_imempresa_id_seq'::regclass);
+
+
+--
+-- TOC entry 3281 (class 2604 OID 24580)
+-- Name: rrhh_mmenu menu_id; Type: DEFAULT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mmenu ALTER COLUMN menu_id SET DEFAULT nextval('public.rrhh_mmenu_menu_id_seq'::regclass);
+
+
+--
+-- TOC entry 3283 (class 2604 OID 24600)
+-- Name: rrhh_mrol imrol_id; Type: DEFAULT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mrol ALTER COLUMN imrol_id SET DEFAULT nextval('public.rrhh_mrol_imrol_id_seq'::regclass);
+
+
+--
+-- TOC entry 3282 (class 2604 OID 24588)
+-- Name: rrhh_mtipodocumento imtipodoc_id; Type: DEFAULT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mtipodocumento ALTER COLUMN imtipodoc_id SET DEFAULT nextval('public.rrhh_mtipodocumento_imtipodoc_id_seq'::regclass);
+
+
+--
+-- TOC entry 3285 (class 2604 OID 24614)
+-- Name: rrhh_musuario imusuario_id; Type: DEFAULT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_musuario ALTER COLUMN imusuario_id SET DEFAULT nextval('public.rrhh_musuario_imusuario_id_seq'::regclass);
+
+
+--
+-- TOC entry 3448 (class 0 OID 24604)
+-- Dependencies: 221
+-- Data for Name: rrhh_mempresa; Type: TABLE DATA; Schema: public; Owner: root
+--
+
+INSERT INTO public.rrhh_mempresa VALUES (1, 'EMPRESA TEST', 1) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 3442 (class 0 OID 24577)
+-- Dependencies: 215
+-- Data for Name: rrhh_mmenu; Type: TABLE DATA; Schema: public; Owner: root
+--
+
+INSERT INTO public.rrhh_mmenu VALUES (3, NULL, 'fas fa-cog', 'Maestros', 1, 2, 2, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (1, 'motivo-prestamo', 'fas fa-money-bill-wave', 'Motivo Préstamo', 1, 3, 3, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (5, 'tipo-trabajador', 'fas fa-user-cog', 'Tipo Trabajador', 1, 3, 3, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (4, 'feriados', 'fas fa-calendar-check', 'Feriados', 1, 3, 3, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (6, 'comisiones-afp', 'fas fa-file-invoice-dollar', 'Comisiones AFP', 1, 3, 3, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (7, NULL, 'fas fa-cog', 'Gestión de Seguridad', 1, NULL, 1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (2, NULL, 'fas fa-users', 'Gestión de Planilla', 1, NULL, 1, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (8, 'usuarios', 'fas fa-user', 'Usuarios', 1, 7, 2, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (9, 'rol', 'fas fa-user-shield', 'Rol', 1, 7, 2, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (10, 'asignar-rol', 'fas fa-user-check', 'Asignar Rol', 1, 7, 2, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (12, 'registro-usuario', 'fas fa-user-plus', 'Registrar Usuario', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (13, 'concepto', 'fas fa-list-alt', 'Concepto', 1, 3, 3, 5) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (14, 'conceptos-regimen-laboral', 'fas fa-list-alt', 'Conceptos Régimen Laboral', 1, 3, 3, 6) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (15, 'sede', 'fas fa-building', 'Sede', 1, 3, 3, 7) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (16, 'puestos-cargos', 'fas fa-user-tie', 'Puestos / Cargos', 1, 3, 3, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (17, NULL, 'fas fa-sync-alt', 'Procesos', 1, 2, 2, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (18, 'trabajador', 'fas fa-user-circle', 'Trabajador', 1, 17, 3, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (19, 'contrato', 'fas fa-pen', 'Contrato', 1, 17, 3, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (20, 'asistencia', 'fas fa-calendar-check', 'Asistencia', 1, 17, 3, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (21, 'consultar-asistencia', 'fas fa-calendar', 'Consultar Asistencia', 1, 17, 3, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (22, 'cronograma-vacaciones', 'fas fa-umbrella-beach', 'Cronograma Vacaciones', 1, 17, 3, 5) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (23, 'conceptos-variables', 'fas fa-file-signature', 'Conceptos Variables', 1, 17, 3, 6) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (24, 'subsidios', 'fas fa-hands-helping', 'Subsidios', 1, 17, 3, 7) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (25, 'apoyo-bono', 'fas fa-hand-holding-usd', 'Apoyo / Bono', 1, 17, 3, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (26, 'prestamos', 'fas fa-money-bill-wave', 'Préstamos', 1, 17, 3, 9) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (27, 'creditos', 'fas fa-dollar-sign', 'Créditos', 1, 17, 3, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (28, 'jornada-laboral', 'fas fa-clock', 'Jornada Laboral', 1, 17, 3, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.rrhh_mmenu VALUES (29, 'generar-planilla', 'fas fa-check-circle', 'Generar Planilla', 1, 17, 3, 12) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 3446 (class 0 OID 24597)
+-- Dependencies: 219
+-- Data for Name: rrhh_mrol; Type: TABLE DATA; Schema: public; Owner: root
+--
+
+
+
+--
+-- TOC entry 3444 (class 0 OID 24585)
+-- Dependencies: 217
+-- Data for Name: rrhh_mtipodocumento; Type: TABLE DATA; Schema: public; Owner: root
+--
+
+INSERT INTO public.rrhh_mtipodocumento VALUES (1, '01', 'Doc. Nacional de Identidad', 'DNI') ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 3450 (class 0 OID 24611)
+-- Dependencies: 223
+-- Data for Name: rrhh_musuario; Type: TABLE DATA; Schema: public; Owner: root
+--
+
+INSERT INTO public.rrhh_musuario VALUES (2, 'Administrador', 'Chidoris', 'Usuario', 1, 1, 1, '12345678', '1990-01-01', 1, 1, '999999999', 'admin@empresa.com', 1, 'admin', '$2b$12$1PYZEhZF9P8E39XLXLGi8e4t2PQ8QQfSZJSh./FpmzI2Dj4t1nkam') ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 3462 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: rrhh_mempresa_imempresa_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.rrhh_mempresa_imempresa_id_seq', 1, true);
+
+
+--
+-- TOC entry 3463 (class 0 OID 0)
+-- Dependencies: 214
+-- Name: rrhh_mmenu_menu_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.rrhh_mmenu_menu_id_seq', 29, true);
+
+
+--
+-- TOC entry 3464 (class 0 OID 0)
+-- Dependencies: 218
+-- Name: rrhh_mrol_imrol_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.rrhh_mrol_imrol_id_seq', 1, false);
+
+
+--
+-- TOC entry 3465 (class 0 OID 0)
+-- Dependencies: 216
+-- Name: rrhh_mtipodocumento_imtipodoc_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.rrhh_mtipodocumento_imtipodoc_id_seq', 1, true);
+
+
+--
+-- TOC entry 3466 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: rrhh_musuario_imusuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: root
+--
+
+SELECT pg_catalog.setval('public.rrhh_musuario_imusuario_id_seq', 2, true);
+
+
+--
+-- TOC entry 3293 (class 2606 OID 24609)
+-- Name: rrhh_mempresa rrhh_mempresa_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mempresa
+    ADD CONSTRAINT rrhh_mempresa_pkey PRIMARY KEY (imempresa_id);
+
+
+--
+-- TOC entry 3287 (class 2606 OID 24582)
+-- Name: rrhh_mmenu rrhh_mmenu_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mmenu
+    ADD CONSTRAINT rrhh_mmenu_pkey PRIMARY KEY (menu_id);
+
+
+--
+-- TOC entry 3291 (class 2606 OID 24602)
+-- Name: rrhh_mrol rrhh_mrol_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mrol
+    ADD CONSTRAINT rrhh_mrol_pkey PRIMARY KEY (imrol_id);
+
+
+--
+-- TOC entry 3289 (class 2606 OID 24590)
+-- Name: rrhh_mtipodocumento rrhh_mtipodocumento_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_mtipodocumento
+    ADD CONSTRAINT rrhh_mtipodocumento_pkey PRIMARY KEY (imtipodoc_id);
+
+
+--
+-- TOC entry 3295 (class 2606 OID 24616)
+-- Name: rrhh_musuario rrhh_musuario_pkey; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_musuario
+    ADD CONSTRAINT rrhh_musuario_pkey PRIMARY KEY (imusuario_id);
+
+
+--
+-- TOC entry 3297 (class 2606 OID 24618)
+-- Name: rrhh_musuario rrhh_musuario_tu_usuario_key; Type: CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_musuario
+    ADD CONSTRAINT rrhh_musuario_tu_usuario_key UNIQUE (tu_usuario);
+
+
+--
+-- TOC entry 3298 (class 2606 OID 24621)
+-- Name: rrhh_musuario fk_usuario_empresa; Type: FK CONSTRAINT; Schema: public; Owner: root
+--
+
+ALTER TABLE ONLY public.rrhh_musuario
+    ADD CONSTRAINT fk_usuario_empresa FOREIGN KEY (iu_empresa) REFERENCES public.rrhh_mempresa(imempresa_id);
+
+
+-- Completed on 2025-10-24 21:20:35 UTC
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict 4Wcv8jNFNG1L6alFsoPJZfD8n6AGE4aL2q4O09CYq4zKHqO1JtCnJlQzOdGHoOn
+

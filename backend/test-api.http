@@ -1,0 +1,164 @@
+### Archivo para probar la API con REST Client (VS Code Extension)
+### O puedes usar estos ejemplos en Postman/Insomnia
+
+### Variables
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### ============================================
+### AUTENTICACIÓN
+### ============================================
+
+### Login exitoso
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Login fallido (contraseña incorrecta)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "wrongpassword"
+}
+
+### ============================================
+### MENÚS
+### ============================================
+
+### Obtener todos los menús
+GET {{baseUrl}}/menus
+Content-Type: {{contentType}}
+
+### Obtener solo menús activos
+GET {{baseUrl}}/menus/active
+Content-Type: {{contentType}}
+
+### ============================================
+### USUARIOS
+### ============================================
+
+### Listar todos los usuarios
+GET {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+### Obtener usuario por ID
+GET {{baseUrl}}/usuarios/2
+Content-Type: {{contentType}}
+
+### Crear nuevo usuario
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{
+  "apellidoPaterno": "Pérez",
+  "apellidoMaterno": "García",
+  "nombres": "Juan Carlos",
+  "empresaId": 1,
+  "sedeId": 1,
+  "tipoDocumentoId": 1,
+  "nroDocumento": "12345678",
+  "fechaNacimiento": "1990-05-15",
+  "rolId": 1,
+  "puestoId": 1,
+  "nroCelular": "999888777",
+  "correo": "juan.perez@empresa.com",
+  "estado": 1,
+  "usuario": "juan.perez",
+  "password": "password123"
+}
+
+### Actualizar usuario
+PUT {{baseUrl}}/usuarios/3
+Content-Type: {{contentType}}
+
+{
+  "apellidoPaterno": "Pérez",
+  "apellidoMaterno": "García",
+  "nombres": "Juan Carlos",
+  "empresaId": 1,
+  "sedeId": 1,
+  "tipoDocumentoId": 1,
+  "nroDocumento": "12345678",
+  "fechaNacimiento": "1990-05-15",
+  "rolId": 1,
+  "puestoId": 1,
+  "nroCelular": "999888777",
+  "correo": "juan.perez.updated@empresa.com",
+  "estado": 1,
+  "usuario": "juan.perez",
+  "password": "newpassword123"
+}
+
+### Eliminar usuario
+DELETE {{baseUrl}}/usuarios/3
+Content-Type: {{contentType}}
+
+### ============================================
+### ROLES
+### ============================================
+
+### Listar todos los roles
+GET {{baseUrl}}/roles
+Content-Type: {{contentType}}
+
+### Obtener rol por ID
+GET {{baseUrl}}/roles/1
+Content-Type: {{contentType}}
+
+### Crear nuevo rol
+POST {{baseUrl}}/roles
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Administrador de Sistema",
+  "estado": 1,
+  "empresaId": 1
+}
+
+### Actualizar rol
+PUT {{baseUrl}}/roles/1
+Content-Type: {{contentType}}
+
+{
+  "descripcion": "Super Administrador",
+  "estado": 1,
+  "empresaId": 1
+}
+
+### Eliminar rol
+DELETE {{baseUrl}}/roles/1
+Content-Type: {{contentType}}
+
+### ============================================
+### PRUEBAS DE VALIDACIÓN
+### ============================================
+
+### Crear usuario con username duplicado (debe fallar)
+POST {{baseUrl}}/usuarios
+Content-Type: {{contentType}}
+
+{
+  "apellidoPaterno": "Test",
+  "apellidoMaterno": "Test",
+  "nombres": "Test",
+  "empresaId": 1,
+  "usuario": "admin",
+  "password": "test123",
+  "correo": "test@test.com",
+  "estado": 1
+}
+
+### Login con usuario inexistente
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "usuarionoexiste",
+  "password": "password"
+}

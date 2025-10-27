@@ -1,82 +1,77 @@
-// Módulo de Gestión de Roles con DataTables
-const roles = {
+// Módulo de Gestión de Roles por Empresa
+// Sobrescribir el objeto completo para evitar problemas de redeclaración
+window.roles = {
     table: null,
+    empresaId: null,
+    modalRol: null,
     
     // Inicializar el módulo
     init: function() {
         console.log('✅ Módulo Roles inicializado');
         
-        // Cargar datos desde localStorage o usar datos por defecto
-        this.cargarDatosLocales();
-        
+        this.obtenerEmpresaUsuario();
         this.inicializarDataTable();
-        this.configurarEventos();
+        this.inicializarModal();
+        this.cargarRoles();
     },
     
-    // Cargar datos desde localStorage
-    cargarDatosLocales: function() {
-        const datosGuardados = localStorage.getItem('roles_data');
-        
-        if (datosGuardados) {
-            this.datosLocales = JSON.parse(datosGuardados);
-            console.log('✅ Datos cargados desde localStorage:', this.datosLocales.length, 'roles');
-        } else {
-            // Datos por defecto
-            this.datosLocales = [
-                {
-                    id: 1,
-                    rol: 'Administrador',
-                    descripcion: 'Acceso completo al sistema'
-                },
-                {
-                    id: 2,
-                    rol: 'Usuario',
-                    descripcion: 'Acceso limitado a funciones básicas'
-                },
-                {
-                    id: 3,
-                    rol: 'Supervisor',
-                    descripcion: 'Acceso a supervisión y reportes'
-                }
-            ];
-            this.guardarDatosLocales();
+    // Obtener empresa del usuario logueado
+    obtenerEmpresaUsuario: function() {
+        const user = localStorage.getItem('user');
+        if (user) {
+            try {
+                const userData = JSON.parse(user);
+                this.empresaId = userData.empresaId || userData.empresa_id || 1;
+                console.log('✅ Empresa del usuario:', this.empresaId);
+            } catch (error) {
+                console.error('Error al obtener empresa del usuario:', error);
+                this.empresaId = 1;
+            }
         }
     },
     
-    // Guardar datos en localStorage
-    guardarDatosLocales: function() {
-        localStorage.setItem('roles_data', JSON.stringify(this.datosLocales));
-        console.log('💾 Datos guardados en localStorage');
-    },
-
-    // Inicializar DataTable con datos locales persistentes
+    // Inicializar DataTable
     inicializarDataTable: function() {
-        // Verificar si la tabla ya existe
-        if ($.fn.DataTable.isDataTable('#tabla-usuarios')) {
-            console.log('✅ Tabla ya inicializada, recargando datos');
-            this.table = $('#tabla-usuarios').DataTable();
-            this.table.clear().rows.add(this.datosLocales).draw();
+        // Asegurarse de que la tabla existe en el DOM
+        if (!$('#tablaRoles').length) {
+            console.warn('⚠️ Tabla #tablaRoles no encontrada en el DOM');
             return;
         }
         
-        // Crear la tabla con datos locales
-        this.table = $('#tabla-usuarios').DataTable({
-            data: this.datosLocales,
+        // Destruir instancia anterior si existe
+        if ($.fn.DataTable.isDataTable('#tablaRoles')) {
+            $('#tablaRoles').DataTable().destroy();
+            $('#tablaRoles').empty(); // Limpiar el contenido
+        }
+        
+        this.table = $('#tablaRoles').DataTable({
+            data: [],
             bSort: false,
             sDom: 'rt<"row align-items-center mt-2"<"col-sm-auto"l><"col-sm-auto"i><"col text-right"p>>',
             iDisplayLength: 10,
             autoWidth: false,
             aoColumns: [
-                { sClass: "text-center" },      // COD
-                { sClass: "text-left" },        // ROL
+                { sClass: "text-center" },      // ID
+                { sClass: "text-left" },        // Descripción
+                { sClass: "text-center" },      // Estado
                 { sClass: "text-center" }       // Acciones
             ],
             columns: [
+                { data: 'id' },
                 { 
-                    data: 'id'
+                    data: 'descripcion',
+                    render: function(data, type, row) {
+                        return `<strong>${data}</strong>`;
+                    }
                 },
                 { 
-                    data: 'rol'
+                    data: 'estado',
+                    render: function(data, type, row) {
+                        const badge = data === 1 
+                            ? '<span class="badge bg-success badge-estado">Activo</span>'
+                            : '<span class="badge bg-danger badge-estado">Inactivo</span>';
+                        return badge;
+                    }
                 },
                 {
                     data: null,
@@ -84,10 +79,10 @@ const roles = {
                     searchable: false,
                     render: function(data, type, row) {
                         return `
-                            <button class="btn btn-action btn-editar" onclick="roles.editar(${row.id})" title="Editar">
+                            <button class="btn btn-action btn-editar" onclick="roles.editarRol(${row.id})" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-action btn-eliminar" onclick="roles.eliminar(${row.id})" title="Eliminar">
+                            <button class="btn btn-action btn-eliminar" onclick="roles.eliminarRol(${row.id})" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </button>
                         `;
@@ -101,11 +96,9 @@ const roles = {
                 lengthMenu: 'Mostrar _MENU_ registros'
             },
             initComplete: function() {
-                // Agregar filtros en el tfoot
                 const api = this.api();
                 
-                // Aplicar filtro a la columna de rol
-                api.columns([1]).every(function() {
+                api.columns([1, 2]).every(function() {
                     const column = this;
                     const input = $('tfoot th').eq(column.index()).find('input');
                     
@@ -118,38 +111,144 @@ const roles = {
                     }
                 });
                 
-                console.log('✅ DataTable de roles inicializada con datos persistentes');
+                console.log('✅ DataTable de roles inicializada');
             }
         });
     },
-
-    // Configurar eventos del módulo
-    configurarEventos: function() {
-        // Aquí se pueden agregar eventos específicos del módulo
-        console.log('✅ Eventos de roles configurados');
+    
+    // Inicializar modal
+    inicializarModal: function() {
+        this.modalRol = new bootstrap.Modal(document.getElementById('modalRol'));
     },
-
-    // Funciones de acciones de tabla
-    editar: function(id) {
-        this.showNotification(`Editar rol ID: ${id} (función en desarrollo)`, 'info');
-    },
-
-    eliminar: function(id) {
-        if (confirm('¿Está seguro de que desea eliminar este rol?')) {
-            // Eliminar de datos locales
-            this.datosLocales = this.datosLocales.filter(r => r.id !== id);
+    
+    // Cargar roles desde el backend
+    cargarRoles: async function() {
+        try {
+            const response = await fetch(`http://localhost:3000/api/roles/empresa/${this.empresaId}`);
+            const result = await response.json();
             
-            // Guardar en localStorage
-            this.guardarDatosLocales();
-            
-            // Actualizar tabla
-            this.table.clear().rows.add(this.datosLocales).draw();
-            
-            this.showNotification(`Rol eliminado correctamente`, 'success');
+            if (result.success && result.data) {
+                this.table.clear().rows.add(result.data).draw();
+                console.log(`✅ ${result.data.length} roles cargados`);
+            } else {
+                console.error('Error al cargar roles:', result.message);
+                this.showNotification('Error al cargar roles', 'danger');
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            this.showNotification('Error de conexión con el servidor', 'danger');
         }
     },
-
-    // Función de notificaciones
+    
+    // Abrir modal para nuevo rol
+    abrirModalNuevoRol: function() {
+        document.getElementById('formRol').reset();
+        document.getElementById('rolId').value = '';
+        document.getElementById('tituloModalRol').textContent = 'Registrar Rol';
+        this.modalRol.show();
+    },
+    
+    // Guardar rol
+    guardarRol: async function() {
+        const form = document.getElementById('formRol');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const rolId = document.getElementById('rolId').value;
+        const descripcion = document.getElementById('rolDescripcion').value.trim();
+        
+        if (!descripcion) {
+            this.showNotification('La descripción del rol es obligatoria', 'warning');
+            return;
+        }
+        
+        const rol = {
+            id: rolId ? parseInt(rolId) : null,
+            descripcion: descripcion,
+            empresaId: this.empresaId
+        };
+        
+        try {
+            const url = rolId 
+                ? `http://localhost:3000/api/roles/${rolId}`
+                : 'http://localhost:3000/api/roles';
+            
+            const method = rolId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(rol)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showNotification(result.message, 'success');
+                this.modalRol.hide();
+                this.cargarRoles();
+            } else {
+                this.showNotification(result.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showNotification('Error al guardar el rol', 'danger');
+        }
+    },
+    
+    // Editar rol
+    editarRol: async function(id) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/roles/${id}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                const rol = result.data;
+                
+                document.getElementById('rolId').value = rol.id;
+                document.getElementById('rolDescripcion').value = rol.descripcion;
+                document.getElementById('tituloModalRol').textContent = 'Editar Rol';
+                
+                this.modalRol.show();
+            } else {
+                this.showNotification('Error al cargar los datos del rol', 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showNotification('Error al cargar el rol', 'danger');
+        }
+    },
+    
+    // Eliminar rol
+    eliminarRol: async function(id) {
+        if (!confirm('¿Está seguro de que desea eliminar este rol?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:3000/api/roles/${id}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showNotification(result.message, 'success');
+                this.cargarRoles();
+            } else {
+                this.showNotification(result.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showNotification('Error al eliminar el rol', 'danger');
+        }
+    },
+    
+    // Mostrar notificación
     showNotification: function(message, type = 'info') {
         const notification = $(`
             <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
@@ -167,21 +266,36 @@ const roles = {
     }
 };
 
-// Inicializar cuando el DOM esté listo
-$(document).ready(function() {
-    // Solo inicializar si no está ya inicializado
-    if (!window.rolesModuloInicializado) {
-        roles.init();
-        window.rolesModuloInicializado = true;
-    } else {
-        // Si ya está inicializado, solo recargar los datos
-        console.log('✅ Módulo ya inicializado, recargando datos');
-        roles.cargarDatosLocales();
-        if (roles.table) {
-            roles.table.clear().rows.add(roles.datosLocales).draw();
+// Función de inicialización que se llama automáticamente
+(function() {
+    console.log('🔄 Script de roles cargado');
+    
+    // Esperar a que jQuery y el DOM estén listos
+    function inicializarModulo() {
+        if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+            console.log('⏳ Esperando jQuery y DataTables...');
+            setTimeout(inicializarModulo, 100);
+            return;
         }
+        
+        if (!$('#tablaRoles').length) {
+            console.log('⏳ Esperando tabla en el DOM...');
+            setTimeout(inicializarModulo, 100);
+            return;
+        }
+        
+        console.log('✅ Inicializando módulo de roles...');
+        
+        // Destruir DataTable anterior si existe
+        if ($.fn.DataTable.isDataTable('#tablaRoles')) {
+            $('#tablaRoles').DataTable().destroy();
+            console.log('🗑️ DataTable anterior destruido');
+        }
+        
+        // Inicializar el módulo
+        window.roles.init();
     }
-});
-
-// Exportar funciones globales
-window.roles = roles;
+    
+    // Iniciar el proceso
+    inicializarModulo();
+})();
