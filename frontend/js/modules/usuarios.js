@@ -1,72 +1,82 @@
 // Módulo de Gestión de Usuarios con DataTables
-const usuarios = {
+// Sobrescribir el objeto completo para evitar problemas de redeclaración
+window.usuarios = {
     table: null,
     
     // Inicializar el módulo
-    init: function() {
+    init: async function() {
         console.log('✅ Módulo Usuarios inicializado');
         
-        // Cargar datos desde localStorage o usar datos por defecto
-        this.cargarDatosLocales();
+        this.configurarEmpresaUsuario();
+        
+        // Cargar usuarios desde el backend
+        await this.cargarUsuarios();
         
         this.inicializarDataTable();
         this.configurarEventos();
-        this.inicializarModal();
     },
     
-    // Cargar datos desde localStorage
-    cargarDatosLocales: function() {
-        const datosGuardados = localStorage.getItem('usuarios_data');
-        
-        if (datosGuardados) {
-            this.datosLocales = JSON.parse(datosGuardados);
-            console.log('✅ Datos cargados desde localStorage:', this.datosLocales.length, 'usuarios');
-        } else {
-            // Datos por defecto
-            this.datosLocales = [
-                {
-                    id: 1,
-                    usuario: 'admin',
-                    nombre_completo: 'Usuario Administrador Sistema',
-                    correo: 'admin@empresa.com',
-                    empresa: 'EMPRESA TEST',
-                    estado: 1
-                },
-                {
-                    id: 2,
-                    usuario: 'juan.perez',
-                    nombre_completo: 'Juan Carlos Pérez García',
-                    correo: 'juan.perez@empresa.com',
-                    empresa: 'EMPRESA TEST',
-                    estado: 1
-                },
-                {
-                    id: 3,
-                    usuario: 'maria.lopez',
-                    nombre_completo: 'María Elena López Rodríguez',
-                    correo: 'maria.lopez@empresa.com',
-                    empresa: 'EMPRESA TEST',
-                    estado: 0
-                }
-            ];
-            this.guardarDatosLocales();
+    // Configurar empresa del usuario logueado
+    configurarEmpresaUsuario: function() {
+        const user = localStorage.getItem('user');
+        if (user) {
+            try {
+                const userData = JSON.parse(user);
+                // Guardar el ID de la empresa del usuario logueado
+                this.empresaId = userData.empresaId || userData.empresa_id || 1;
+                console.log('✅ Empresa del usuario:', this.empresaId);
+            } catch (error) {
+                console.error('Error al obtener empresa del usuario:', error);
+                this.empresaId = 1; // Default
+            }
         }
     },
     
-    // Guardar datos en localStorage
-    guardarDatosLocales: function() {
-        localStorage.setItem('usuarios_data', JSON.stringify(this.datosLocales));
-        console.log('💾 Datos guardados en localStorage');
+
+    
+    // Cargar usuarios desde el backend
+    cargarUsuarios: async function() {
+        try {
+            // Usar el endpoint que filtra por empresa del usuario logueado
+            const response = await fetch(`http://localhost:3000/api/usuarios/empresa/${this.empresaId}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                this.datosLocales = result.data.map(usuario => ({
+                    id: usuario.id,
+                    usuario: usuario.usuario,
+                    nombre_completo: `${usuario.nombres} ${usuario.apellidoPaterno} ${usuario.apellidoMaterno || ''}`.trim(),
+                    correo: usuario.correo,
+                    empresa: usuario.empresaNombre || 'N/A',
+                    estado: usuario.estado
+                }));
+                
+                console.log(`✅ Usuarios de empresa ${this.empresaId} cargados:`, this.datosLocales.length);
+                return true;
+            } else {
+                console.error('Error al cargar usuarios:', result.message);
+                this.datosLocales = [];
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Error al cargar usuarios:', error);
+            this.datosLocales = [];
+            return false;
+        }
     },
 
     // Inicializar DataTable con datos locales persistentes
     inicializarDataTable: function() {
-        // Verificar si la tabla ya existe
-        if ($.fn.DataTable.isDataTable('#tablaUsuarios')) {
-            console.log('✅ Tabla ya inicializada, recargando datos');
-            this.table = $('#tablaUsuarios').DataTable();
-            this.table.clear().rows.add(this.datosLocales).draw();
+        // Asegurarse de que la tabla existe en el DOM
+        if (!$('#tablaUsuarios').length) {
+            console.warn('⚠️ Tabla #tablaUsuarios no encontrada en el DOM');
             return;
+        }
+        
+        // Destruir instancia anterior si existe
+        if ($.fn.DataTable.isDataTable('#tablaUsuarios')) {
+            $('#tablaUsuarios').DataTable().destroy();
+            $('#tablaUsuarios').empty(); // Limpiar el contenido
         }
         
         // Crear la tabla con datos locales
@@ -167,289 +177,38 @@ const usuarios = {
         });
     },
 
-    // Agregar nuevo usuario a los datos locales
-    agregarUsuarioLocal: function(nuevoUsuario) {
-        // Generar nuevo ID
-        const maxId = Math.max(...this.datosLocales.map(u => u.id), 0);
-        nuevoUsuario.id = maxId + 1;
+    // Recargar usuarios desde el backend
+    recargarUsuarios: async function() {
+        console.log('🔄 Recargando usuarios...');
         
-        // Agregar a datos locales
-        this.datosLocales.push(nuevoUsuario);
+        await this.cargarUsuarios();
         
-        // Guardar en localStorage
-        this.guardarDatosLocales();
+        // Destruir y recrear la tabla
+        if ($.fn.DataTable.isDataTable('#tablaUsuarios')) {
+            $('#tablaUsuarios').DataTable().destroy();
+        }
         
-        // Actualizar tabla
-        this.table.row.add(nuevoUsuario).draw();
+        this.inicializarDataTable();
         
-        console.log('✅ Usuario agregado localmente:', nuevoUsuario);
+        console.log('✅ Usuarios recargados');
     },
 
     // Configurar eventos del módulo
     configurarEventos: function() {
-        // Evento del formulario de nuevo usuario
-        $('#form-nuevo-usuario').on('submit', function(e) {
-            e.preventDefault();
-            usuarios.procesarFormularioUsuario();
-        });
-        
-        // Validación en tiempo real del formulario de credenciales
-        $('#password, #confirm-password').on('input', function() {
-            usuarios.validarConfirmacionPassword();
-        });
+        // Eventos específicos de la tabla si son necesarios
+        console.log('✅ Eventos de tabla configurados');
     },
 
-    // Inicializar modal
-    inicializarModal: function() {
-        this.modalCredenciales = new bootstrap.Modal(document.getElementById('modalCredenciales'));
-    },
-
-    // Función para abrir el formulario de nuevo usuario
-    abrirFormularioNuevoUsuario: function() {
-        console.log('📝 Abriendo formulario de nuevo usuario...');
+    // Abrir módulo de registro de usuario
+    abrirRegistroUsuario: function() {
+        console.log('📝 Abriendo módulo de registro de usuario...');
         
-        // Ocultar lista de usuarios
-        $('#lista-usuarios').hide();
-        
-        // Mostrar formulario
-        $('#formulario-usuario').show();
-        
-        // Limpiar formulario
-        document.getElementById('form-nuevo-usuario').reset();
-        
-        // Scroll al formulario
-        document.getElementById('formulario-usuario').scrollIntoView({ 
-            behavior: 'smooth' 
-        });
-        
-        this.showNotification('Formulario de nuevo usuario abierto', 'info');
-    },
-
-    // Función para cancelar el formulario
-    cancelarFormulario: function() {
-        console.log('❌ Cancelando formulario...');
-        
-        if (confirm('¿Está seguro de que desea cancelar? Se perderán los datos ingresados.')) {
-            // Ocultar formulario
-            $('#formulario-usuario').hide();
-            
-            // Mostrar lista de usuarios
-            $('#lista-usuarios').show();
-            
-            // Limpiar formulario
-            document.getElementById('form-nuevo-usuario').reset();
-            
-            this.showNotification('Formulario cancelado', 'warning');
-        }
-    },
-
-    // Procesar el formulario de usuario (paso 1)
-    procesarFormularioUsuario: function() {
-        console.log('📋 Procesando formulario de usuario...');
-        
-        // Validar campos requeridos
-        const form = document.getElementById('form-nuevo-usuario');
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
-        
-        // Recopilar datos del formulario
-        const datosUsuario = {
-            empresa: $('#empresa').val(),
-            sede: $('#sede').val(),
-            tipoDoc: $('#tipo-doc').val(),
-            nroDoc: $('#nro-doc').val(),
-            fechaNacimiento: $('#fecha-nacimiento').val(),
-            nombres: $('#nombres').val(),
-            apellidos: $('#apellidos').val(),
-            rol: $('#rol').val(),
-            puesto: $('#puesto').val(),
-            telefono: $('#telefono').val(),
-            email: $('#email').val(),
-            estado: $('#estado').val()
-        };
-        
-        console.log('📊 Datos del usuario:', datosUsuario);
-        
-        // Validaciones adicionales
-        if (!this.validarEmail(datosUsuario.email)) {
-            this.showNotification('Por favor ingrese un email válido', 'danger');
-            return;
-        }
-        
-        if (!this.validarDocumento(datosUsuario.nroDoc, datosUsuario.tipoDoc)) {
-            this.showNotification('Número de documento inválido', 'danger');
-            return;
-        }
-        
-        // Guardar datos temporalmente
-        this.tempUserData = datosUsuario;
-        
-        // Abrir modal de credenciales
-        this.abrirModalCredenciales();
-    },
-
-    // Abrir modal de credenciales
-    abrirModalCredenciales: function() {
-        console.log('🔑 Abriendo modal de credenciales...');
-        
-        // Limpiar campos del modal
-        $('#username').val('');
-        $('#password').val('');
-        $('#confirm-password').val('');
-        
-        // Sugerir un nombre de usuario basado en los datos
-        const nombres = $('#nombres').val();
-        const apellidos = $('#apellidos').val();
-        
-        if (nombres && apellidos) {
-            const sugerencia = this.generarSugerenciaUsername(nombres, apellidos);
-            $('#username').val(sugerencia);
-        }
-        
-        // Mostrar modal
-        this.modalCredenciales.show();
-        
-        this.showNotification('Complete las credenciales de acceso', 'info');
-    },
-
-    // Generar sugerencia de nombre de usuario
-    generarSugerenciaUsername: function(nombres, apellidos) {
-        const primerNombre = nombres.split(' ')[0].toLowerCase();
-        const primerApellido = apellidos.split(' ')[0].toLowerCase();
-        
-        // Remover acentos y caracteres especiales
-        const username = (primerNombre + '.' + primerApellido)
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z.]/g, '');
-        
-        return username;
-    },
-
-    // Toggle para mostrar/ocultar contraseña
-    togglePassword: function() {
-        const passwordField = $('#password')[0];
-        const toggleIcon = $('#togglePasswordIcon');
-        
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
-            toggleIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+        // Cargar el módulo de registro-usuario
+        if (typeof loadModuleContent === 'function') {
+            loadModuleContent('registro-usuario', 'Registrar Usuario');
         } else {
-            passwordField.type = 'password';
-            toggleIcon.removeClass('fa-eye-slash').addClass('fa-eye');
-        }
-    },
-
-    // Validar confirmación de contraseña
-    validarConfirmacionPassword: function() {
-        const password = $('#password').val();
-        const confirmPassword = $('#confirm-password').val();
-        const confirmField = $('#confirm-password')[0];
-        
-        if (confirmPassword && password !== confirmPassword) {
-            confirmField.setCustomValidity('Las contraseñas no coinciden');
-            $(confirmField).addClass('is-invalid').removeClass('is-valid');
-        } else {
-            confirmField.setCustomValidity('');
-            $(confirmField).removeClass('is-invalid');
-            if (confirmPassword) {
-                $(confirmField).addClass('is-valid');
-            }
-        }
-    },
-
-    // Guardar usuario completo
-    guardarUsuario: function() {
-        console.log('💾 Guardando usuario...');
-        
-        // Validar credenciales
-        const username = $('#username').val().trim();
-        const password = $('#password').val();
-        const confirmPassword = $('#confirm-password').val();
-        
-        if (!username || !password || !confirmPassword) {
-            this.showNotification('Todos los campos de credenciales son obligatorios', 'danger');
-            return;
-        }
-        
-        if (password !== confirmPassword) {
-            this.showNotification('Las contraseñas no coinciden', 'danger');
-            return;
-        }
-        
-        if (password.length < 6) {
-            this.showNotification('La contraseña debe tener al menos 6 caracteres', 'danger');
-            return;
-        }
-        
-        // Combinar datos del usuario con credenciales
-        const datosCompletos = {
-            usuario: username,
-            nombre_completo: `${this.tempUserData.nombres} ${this.tempUserData.apellidos}`,
-            correo: this.tempUserData.email,
-            empresa: 'EMPRESA TEST',
-            estado: parseInt(this.tempUserData.estado),
-            ...this.tempUserData,
-            password: password
-        };
-        
-        console.log('📤 Guardando datos completos:', { ...datosCompletos, password: '***' });
-        
-        // Simular guardado y agregar a datos locales
-        this.simularGuardadoUsuario(datosCompletos);
-    },
-
-    // Simular guardado de usuario (temporal)
-    simularGuardadoUsuario: function(datos) {
-        const saveButton = $('#modalCredenciales .btn-success');
-        const originalText = saveButton.html();
-        
-        // Mostrar loading
-        saveButton.html('<i class="fas fa-spinner fa-spin me-2"></i>Guardando...').prop('disabled', true);
-        
-        // Simular delay de API
-        setTimeout(() => {
-            // Agregar usuario a datos locales
-            this.agregarUsuarioLocal(datos);
-            
-            // Restaurar botón
-            saveButton.html(originalText).prop('disabled', false);
-            
-            // Cerrar modal
-            this.modalCredenciales.hide();
-            
-            // Volver a la lista
-            this.cancelarFormulario();
-            
-            // Mostrar éxito
-            this.showNotification(`Usuario "${datos.usuario}" creado exitosamente`, 'success');
-            
-            // Limpiar datos temporales
-            delete this.tempUserData;
-            
-        }, 2000);
-    },
-
-    // Funciones de validación
-    validarEmail: function(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    },
-
-    validarDocumento: function(nroDoc, tipoDoc) {
-        if (!nroDoc || !tipoDoc) return false;
-        
-        switch (tipoDoc) {
-            case '1': // DNI
-                return /^\d{8}$/.test(nroDoc);
-            case '2': // Pasaporte
-                return /^[A-Z0-9]{6,12}$/.test(nroDoc.toUpperCase());
-            case '3': // Carnet de Extranjería
-                return /^\d{9,12}$/.test(nroDoc);
-            default:
-                return false;
+            console.error('❌ Función loadModuleContent no encontrada');
+            this.showNotification('Error al cargar el módulo de registro', 'danger');
         }
     },
 
@@ -458,18 +217,27 @@ const usuarios = {
         this.showNotification(`Editar usuario ID: ${id} (función en desarrollo)`, 'info');
     },
 
-    eliminar: function(id) {
+    eliminar: async function(id) {
         if (confirm('¿Está seguro de que desea eliminar este usuario?')) {
-            // Eliminar de datos locales
-            this.datosLocales = this.datosLocales.filter(u => u.id !== id);
-            
-            // Guardar en localStorage
-            this.guardarDatosLocales();
-            
-            // Actualizar tabla
-            this.table.clear().rows.add(this.datosLocales).draw();
-            
-            this.showNotification(`Usuario eliminado correctamente`, 'success');
+            try {
+                const response = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.showNotification('Usuario eliminado correctamente', 'success');
+                    
+                    // Recargar usuarios
+                    await this.recargarUsuarios();
+                } else {
+                    this.showNotification(result.message || 'Error al eliminar usuario', 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Error al eliminar usuario:', error);
+                this.showNotification('Error al conectar con el servidor', 'danger');
+            }
         }
     },
 
@@ -491,24 +259,37 @@ const usuarios = {
     }
 };
 
-// Inicializar cuando el DOM esté listo
-$(document).ready(function() {
-    // Solo inicializar si no está ya inicializado
-    if (!window.usuariosModuloInicializado) {
-        usuarios.init();
-        window.usuariosModuloInicializado = true;
-    } else {
-        // Si ya está inicializado, solo recargar los datos
-        console.log('✅ Módulo ya inicializado, recargando datos');
-        usuarios.cargarDatosLocales();
-        if (usuarios.table) {
-            usuarios.table.clear().rows.add(usuarios.datosLocales).draw();
+// Función de inicialización que se llama automáticamente
+(function() {
+    console.log('🔄 Script de usuarios cargado');
+    
+    // Esperar a que jQuery y el DOM estén listos
+    function inicializarModulo() {
+        if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+            console.log('⏳ Esperando jQuery y DataTables...');
+            setTimeout(inicializarModulo, 100);
+            return;
         }
+        
+        if (!$('#tablaUsuarios').length) {
+            console.log('⏳ Esperando tabla en el DOM...');
+            setTimeout(inicializarModulo, 100);
+            return;
+        }
+        
+        console.log('✅ Inicializando módulo de usuarios...');
+        
+        // Destruir DataTable anterior si existe
+        if ($.fn.DataTable.isDataTable('#tablaUsuarios')) {
+            $('#tablaUsuarios').DataTable().destroy();
+            console.log('🗑️ DataTable anterior destruido');
+        }
+        
+        // Inicializar el módulo
+        window.usuarios.init();
     }
-});
+    
+    // Iniciar el proceso
+    inicializarModulo();
+})();
 
-// Exportar funciones globales para uso en HTML
-window.abrirFormularioNuevoUsuario = () => usuarios.abrirFormularioNuevoUsuario();
-window.cancelarFormulario = () => usuarios.cancelarFormulario();
-window.togglePassword = () => usuarios.togglePassword();
-window.guardarUsuario = () => usuarios.guardarUsuario();

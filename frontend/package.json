@@ -1,0 +1,13 @@
+{
+  "name": "erp-frontend",
+  "version": "1.0.0",
+  "description": "Frontend del Sistema ERP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["erp", "frontend"],
+  "author": "Meridian ERP",
+  "license": "ISC"
+}

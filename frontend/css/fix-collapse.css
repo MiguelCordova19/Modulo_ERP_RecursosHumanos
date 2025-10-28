@@ -1,0 +1,46 @@
+/* Fix para el colapso de menús */
+
+/* Asegurar que el colapso funcione correctamente */
+.collapse {
+    display: none;
+    transition: none !important;
+}
+
+.collapse.show {
+    display: block;
+}
+
+/* Prevenir que Bootstrap interfiera */
+.collapse.collapsing {
+    display: none !important;
+}
+
+/* Iconos de colapso */
+.collapse-icon,
+.collapse-icon-sub {
+    transition: transform 0.3s ease !important;
+    display: inline-block;
+}
+
+/* Rotación del icono cuando está expandido */
+[aria-expanded="true"] .collapse-icon,
+[aria-expanded="true"] .collapse-icon-sub {
+    transform: rotate(180deg) !important;
+}
+
+[aria-expanded="false"] .collapse-icon,
+[aria-expanded="false"] .collapse-icon-sub {
+    transform: rotate(0deg) !important;
+}
+
+/* Prevenir clicks múltiples */
+.menu-dropdown,
+.menu-dropdown-sub {
+    pointer-events: auto;
+    user-select: none;
+}
+
+/* Asegurar que los submenús se muestren correctamente */
+.collapse.show > ul {
+    display: block;
+}
