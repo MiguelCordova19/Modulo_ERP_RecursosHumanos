@@ -116,16 +116,13 @@
     <!-- Modal de Cambio de Contraseña Obligatorio -->
     <div id="modalCambioPasswordContainer"></div>
 
-    <!-- JavaScript personalizado -->
-    <script src="/js/dashboard.js"></script>
-    
     <!-- Script de funciones para cambio de contraseña -->
     <script>
         // Función para toggle de visibilidad de contraseña
         function togglePasswordField(fieldId, iconId) {
             const field = document.getElementById(fieldId);
             const icon = document.getElementById(iconId);
-            
+
             if (field && icon) {
                 if (field.type === 'password') {
                     field.type = 'text';
@@ -144,44 +141,44 @@
             const passwordActual = document.getElementById('passwordActual').value;
             const passwordNueva = document.getElementById('passwordNueva').value;
             const passwordConfirmar = document.getElementById('passwordConfirmar').value;
-            
+
             // Validaciones
             if (!passwordActual || !passwordNueva || !passwordConfirmar) {
                 showNotification('Todos los campos son obligatorios', 'danger');
                 return;
             }
-            
+
             if (passwordNueva.length < 6) {
                 showNotification('La nueva contraseña debe tener al menos 6 caracteres', 'danger');
                 return;
             }
-            
+
             if (passwordNueva !== passwordConfirmar) {
                 showNotification('Las contraseñas no coinciden', 'danger');
                 return;
             }
-            
+
             if (passwordActual === passwordNueva) {
                 showNotification('La nueva contraseña debe ser diferente a la actual', 'danger');
                 return;
             }
-            
+
             // Obtener datos del usuario
             const user = localStorage.getItem('user');
             if (!user) {
                 showNotification('Error: No se encontró información del usuario', 'danger');
                 return;
             }
-            
+
             const userData = JSON.parse(user);
             const usuarioId = userData.id || userData.usuario_id;
-            
+
             // Deshabilitar botón
             const btn = event.target;
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Cambiando...';
             btn.disabled = true;
-            
+
             try {
                 // Usar el nuevo endpoint que valida la contraseña actual
                 const response = await fetch(`http://localhost:3000/api/usuarios/${usuarioId}/cambiar-password-validado`, {
@@ -194,23 +191,23 @@
                         passwordNueva: passwordNueva
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showNotification('Contraseña cambiada exitosamente', 'success');
-                    
+
                     // Actualizar el usuario en localStorage para quitar el flag de primerLogin
                     userData.primerLogin = 0;
                     userData.primer_login = 0;
                     localStorage.setItem('user', JSON.stringify(userData));
-                    
+
                     // Cerrar modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modalCambioPasswordObligatorio'));
                     if (modal) {
                         modal.hide();
                     }
-                    
+
                     // Recargar la página para continuar normalmente
                     setTimeout(() => {
                         window.location.reload();
@@ -227,28 +224,29 @@
             }
         }
     </script>
-    
+
     <!-- Script para verificar primer login -->
     <script>
         // Verificar si el usuario necesita cambiar su contraseña
-        document.addEventListener('DOMContentLoaded', async function() {
+        // Este script se ejecuta DESPUÉS de que dashboard.js haya cargado los menús
+        window.addEventListener('load', async function () {
             const user = localStorage.getItem('user');
-            
+
             if (user) {
                 try {
                     const userData = JSON.parse(user);
                     const primerLogin = userData.primerLogin || userData.primer_login || 0;
-                    
+
                     console.log('✅ Verificando primer login:', primerLogin);
-                    
+
                     if (primerLogin === 1) {
                         console.log('⚠️ Usuario debe cambiar contraseña');
-                        
+
                         // Cargar el modal de cambio de contraseña
                         const response = await fetch('/modal-cambio-password.html');
                         const html = await response.text();
                         document.getElementById('modalCambioPasswordContainer').innerHTML = html;
-                        
+
                         // Esperar un momento para que el modal se cargue en el DOM
                         setTimeout(() => {
                             const modalElement = document.getElementById('modalCambioPasswordObligatorio');
@@ -264,6 +262,9 @@
             }
         });
     </script>
+
+    <!-- JavaScript personalizado - DEBE IR AL FINAL -->
+    <script src="/js/dashboard.js"></script>
 </body>
 
 </html>

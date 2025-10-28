@@ -451,20 +451,6 @@ function checkAuthentication() {
         localStorage.removeItem('user');
         window.location.href = '/login.html';
     }
-
-    // Actualizar el sidebar con el nombre de la empresa
-    const nombreEmpresaElement = document.getElementById('nombreEmpresaSidebar');
-    const subtituloEmpresaElement = document.getElementById('subtituloEmpresa');
-
-    if (nombreEmpresaElement) {
-        nombreEmpresaElement.textContent = nombreEmpresa;
-    }
-
-    if (subtituloEmpresaElement) {
-        subtituloEmpresaElement.textContent = subtituloEmpresa;
-    }
-
-    console.log('✅ Empresa cargada:', nombreEmpresa, subtituloEmpresa);
 }
 
 function cargarInformacionEmpresa(userData) {
