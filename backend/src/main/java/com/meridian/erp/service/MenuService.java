@@ -3,6 +3,7 @@ package com.meridian.erp.service;
 import com.meridian.erp.dto.MenuDTO;
 import com.meridian.erp.entity.Menu;
 import com.meridian.erp.repository.MenuRepository;
+import com.meridian.erp.repository.RolMenuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 public class MenuService {
     
     private final MenuRepository menuRepository;
+    private final RolMenuRepository rolMenuRepository;
     
     public List<Menu> findAllActive() {
         return menuRepository.findByEstadoOrderByPosicionAsc(1);
@@ -28,6 +30,30 @@ public class MenuService {
      */
     public List<MenuDTO> findAllActiveHierarchical() {
         List<Menu> menus = menuRepository.findByEstadoOrderByPosicionAsc(1);
+        return organizarMenusJerarquicos(menus);
+    }
+    
+    /**
+     * Obtiene los menús activos con permisos para un rol específico
+     * TODOS los roles necesitan permisos explícitos en rrhh_drol_menu
+     */
+    public List<MenuDTO> findActiveHierarchicalByRol(Integer rolId) {
+        // Obtener IDs de menús permitidos para el rol
+        List<Integer> menuIds = rolMenuRepository.findMenuIdsByRolId(rolId);
+        
+        if (menuIds.isEmpty()) {
+            System.out.println("⚠️ Rol " + rolId + " no tiene permisos asignados");
+            return new ArrayList<>();
+        }
+        
+        // Obtener los menús completos y filtrar solo los activos
+        List<Menu> menus = menuRepository.findAllById(menuIds).stream()
+                .filter(menu -> menu.getEstado() == 1)
+                .sorted(Comparator.comparing(Menu::getPosicion))
+                .collect(Collectors.toList());
+        
+        System.out.println("✅ Rol " + rolId + " tiene acceso a " + menus.size() + " menús");
+        
         return organizarMenusJerarquicos(menus);
     }
     

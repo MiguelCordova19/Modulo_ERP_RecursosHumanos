@@ -2,51 +2,116 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">
         <i class="fas fa-user-check me-2 text-primary"></i>
-        Asignar Rol
+        Asignar Permisos a Roles
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-primary btn-nuevo-usuario">
-            <i class="fas fa-plus me-1"></i>
-            Nuevo
+        <button type="button" class="btn btn-success" id="btn-guardar-permisos">
+            <i class="fas fa-save me-1"></i>
+            Guardar Permisos
         </button>
-        <button type="button" class="btn btn-secondary ms-2 btn-actualizar-motivo">
-            <i class="fas fa-search me-1"></i>
-            Consultar
+        <button type="button" class="btn btn-secondary ms-2" id="btn-actualizar-matriz">
+            <i class="fas fa-sync-alt me-1"></i>
+            Actualizar
         </button>
     </div>
 </div>
 
-<!-- Tabla de motivos con DataTables -->
+<!-- Matriz de permisos -->
 <div class="row">
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-body">
-                <table id="tabla-usuarios" class="table table-striped table-bordered table-hover dt-module-table" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th style="width: 10%;"></th>
-                            <th style="width: 10%;">Estos se llenaran dinamicamente</th>
-                        </tr>
-                    </thead>
-                    <tfoot>
-                        <tr>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </tfoot>
-                    <tbody>
-                        <!-- Los datos se cargarán dinámicamente -->
-                    </tbody>
-                </table>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Instrucciones:</strong> Marque las casillas para asignar permisos de menús a cada rol. 
+                    Los roles mostrados son específicos de su empresa. El rol DASHBOARD tiene acceso completo automáticamente.
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="tabla-permisos" class="table table-bordered table-hover" style="width:100%">
+                        <thead class="table-primary">
+                            <tr>
+                                <th style="width: 30%; position: sticky; left: 0; background: #cfe2ff; z-index: 10;">
+                                    <i class="fas fa-list me-2"></i>Menú
+                                </th>
+                                <!-- Las columnas de roles se generarán dinámicamente -->
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-permisos">
+                            <!-- Los datos se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- CSS y Scripts -->
+<!-- CSS personalizado -->
+<style>
+    #tabla-permisos {
+        font-size: 0.9rem;
+    }
+    
+    #tabla-permisos thead th {
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 600;
+    }
+    
+    #tabla-permisos tbody td {
+        vertical-align: middle;
+    }
+    
+    #tabla-permisos tbody td:first-child {
+        position: sticky;
+        left: 0;
+        background: white;
+        font-weight: 500;
+        z-index: 5;
+    }
+    
+    #tabla-permisos tbody tr:hover td:first-child {
+        background: #f8f9fa;
+    }
+    
+    .menu-nivel-1 {
+        font-weight: 700;
+        background-color: #e7f3ff;
+        color: #0d6efd;
+    }
+    
+    .menu-nivel-2 {
+        padding-left: 20px;
+        font-weight: 600;
+        background-color: #f0f8ff;
+    }
+    
+    .menu-nivel-3 {
+        padding-left: 40px;
+        font-weight: 400;
+    }
+    
+    .checkbox-permiso {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .text-center {
+        text-align: center !important;
+    }
+    
+    .table-responsive {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+</style>
+
+<!-- Scripts -->
 <link rel="stylesheet" href="/css/modules/module-tables.css">
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="/js/modules/usuarios.js"></script>
+<!-- SweetAlert2 para notificaciones -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/modules/asignar-rol.js"></script>
