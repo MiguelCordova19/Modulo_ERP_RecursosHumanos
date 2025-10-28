@@ -1,0 +1,80 @@
+<!-- Módulo de Visualización de Empresas -->
+<div class="container-fluid">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-building me-2"></i>
+            Empresas Registradas
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="/empresas/dashboard-empresa.html" class="btn btn-primary">
+                <i class="fas fa-cog me-2"></i>Gestionar Empresas
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabla de empresas (solo visualización) -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaEmpresasUsuario">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 60px;">ID</th>
+                            <th>Nombre</th>
+                            <th class="text-center" style="width: 120px;">RUC</th>
+                            <th style="width: 130px;">Teléfono</th>
+                            <th style="width: 250px;">Dirección</th>
+                            <th class="text-center" style="width: 100px;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Datos dinámicos -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table thead th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: none;
+        margin: 0 2px;
+    }
+
+    .btn-editar {
+        background: rgba(23, 162, 184, 0.1);
+        color: #17a2b8;
+    }
+
+    .btn-editar:hover {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-eliminar {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .btn-eliminar:hover {
+        background: #dc3545;
+        color: white;
+    }
+</style>
+
+<script src="/js/modules/empresas.js"></script>
