@@ -366,13 +366,44 @@
 
                 if (data.success) {
                     // Guardar datos del usuario en localStorage
-                    localStorage.setItem('user', JSON.stringify(data.data));
+                    const userData = data.data;
+                    
+                    // Guardar objeto completo (para compatibilidad)
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    
+                    // Guardar campos individuales
+                    localStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('usuario_id', userData.id || '');
+                    localStorage.setItem('usuario', userData.usuario || '');
+                    localStorage.setItem('nombre_completo', userData.nombreCompleto || userData.nombre_completo || '');
+                    localStorage.setItem('correo', userData.correo || '');
+                    localStorage.setItem('empresa_id', userData.empresaId || userData.empresa_id || '');
+                    localStorage.setItem('empresa_nombre', userData.empresaNombre || userData.empresa_nombre || '');
+                    localStorage.setItem('sede_id', userData.sedeId || userData.sede_id || '');
+                    localStorage.setItem('puesto_id', userData.puestoId || userData.puesto_id || '');
+                    localStorage.setItem('primer_login', userData.primerLogin || userData.primer_login || '0');
+                    
+                    // IMPORTANTE: Guardar rol_id
+                    const rolId = userData.rolId || userData.rol_id;
+                    if (rolId !== null && rolId !== undefined) {
+                        localStorage.setItem('rol_id', String(rolId));
+                        console.log('✅ rol_id guardado:', String(rolId));
+                    } else {
+                        console.warn('⚠️ rolId no encontrado en userData');
+                        localStorage.setItem('rol_id', '1'); // Por defecto DASHBOARD
+                    }
+                    
+                    console.log('💾 Sesión guardada:', {
+                        usuario: userData.usuario,
+                        rol_id: localStorage.getItem('rol_id'),
+                        empresa_id: localStorage.getItem('empresa_id')
+                    });
 
                     // Mostrar mensaje de éxito
                     alertContainer.innerHTML = `
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i>
-                            ¡Bienvenido ${data.data.nombreCompleto || data.data.nombre_completo || data.data.usuario}!
+                            ¡Bienvenido ${userData.nombreCompleto || userData.nombre_completo || userData.usuario}!
                         </div>
                     `;
 

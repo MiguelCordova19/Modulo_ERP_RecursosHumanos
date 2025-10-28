@@ -58,6 +58,9 @@ public class AuthService {
         // Obtener primerLogin (por defecto 0 si es null)
         Integer primerLogin = usuario.getPrimerLogin() != null ? usuario.getPrimerLogin() : 0;
         
+        // Obtener rolId (por defecto 1 si es null)
+        Integer rolId = usuario.getRolId() != null ? usuario.getRolId() : 1;
+        
         LoginResponse response = new LoginResponse(
             usuario.getId(),
             usuario.getUsuario(),
@@ -66,6 +69,7 @@ public class AuthService {
             empresaNombre,
             empresaId,
             empresaNombre,
+            rolId,
             usuario.getEstado(),
             primerLogin
         );

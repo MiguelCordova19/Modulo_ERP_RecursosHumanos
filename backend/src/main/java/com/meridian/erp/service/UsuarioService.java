@@ -100,38 +100,47 @@ public class UsuarioService {
             passwordEncriptado = null;
         }
         
-        String sql = "{CALL sp_guardar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        // Usar CALL directo con PostgreSQL
+        String sql = "CALL sp_guardar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        return jdbcTemplate.execute(sql, (java.sql.CallableStatement cs) -> {
-            cs.setLong(1, usuario.getId() != null ? usuario.getId() : 0);
-            cs.setString(2, usuario.getUsuario());
-            cs.setString(3, passwordEncriptado);
-            cs.setString(4, usuario.getNombres());
-            cs.setString(5, usuario.getApellidoPaterno());
-            cs.setString(6, usuario.getApellidoMaterno());
-            cs.setLong(7, usuario.getEmpresaId());
-            if (usuario.getSedeId() != null) {
-                cs.setLong(8, usuario.getSedeId());
-            } else {
-                cs.setNull(8, java.sql.Types.BIGINT);
+        return jdbcTemplate.execute((java.sql.Connection conn) -> {
+            try (java.sql.CallableStatement cs = conn.prepareCall(sql)) {
+                // Parámetros IN
+                cs.setLong(1, usuario.getId() != null ? usuario.getId() : 0);
+                cs.setString(2, usuario.getUsuario());
+                cs.setString(3, passwordEncriptado);
+                cs.setString(4, usuario.getNombres());
+                cs.setString(5, usuario.getApellidoPaterno());
+                cs.setString(6, usuario.getApellidoMaterno());
+                cs.setLong(7, usuario.getEmpresaId());
+                if (usuario.getSedeId() != null) {
+                    cs.setLong(8, usuario.getSedeId());
+                } else {
+                    cs.setNull(8, java.sql.Types.BIGINT);
+                }
+                cs.setInt(9, usuario.getTipoDocumentoId());
+                cs.setString(10, usuario.getNroDocumento());
+                cs.setDate(11, usuario.getFechaNacimiento() != null ? java.sql.Date.valueOf(usuario.getFechaNacimiento()) : null);
+                cs.setInt(12, usuario.getRolId());
+                cs.setInt(13, usuario.getPuestoId());
+                cs.setString(14, usuario.getNroCelular());
+                cs.setString(15, usuario.getCorreo());
+                
+                // Parámetros OUT
+                cs.registerOutParameter(16, java.sql.Types.BIGINT);
+                cs.registerOutParameter(17, java.sql.Types.VARCHAR);
+                cs.registerOutParameter(18, java.sql.Types.VARCHAR);
+                
+                // Ejecutar
+                cs.execute();
+                
+                // Obtener resultados
+                Map<String, Object> resultado = new java.util.HashMap<>();
+                resultado.put("id", cs.getLong(16));
+                resultado.put("usuario", cs.getString(17));
+                resultado.put("mensaje", cs.getString(18));
+                return resultado;
             }
-            cs.setInt(9, usuario.getTipoDocumentoId());
-            cs.setString(10, usuario.getNroDocumento());
-            cs.setDate(11, usuario.getFechaNacimiento() != null ? java.sql.Date.valueOf(usuario.getFechaNacimiento()) : null);
-            cs.setInt(12, usuario.getRolId());
-            cs.setInt(13, usuario.getPuestoId());
-            cs.setString(14, usuario.getNroCelular());
-            cs.setString(15, usuario.getCorreo());
-            cs.registerOutParameter(16, java.sql.Types.BIGINT);
-            cs.registerOutParameter(17, java.sql.Types.VARCHAR);
-            cs.registerOutParameter(18, java.sql.Types.VARCHAR);
-            cs.execute();
-            
-            Map<String, Object> resultado = new java.util.HashMap<>();
-            resultado.put("id", cs.getLong(16));
-            resultado.put("usuario", cs.getString(17));
-            resultado.put("mensaje", cs.getString(18));
-            return resultado;
         });
     }
     

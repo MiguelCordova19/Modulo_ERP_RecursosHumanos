@@ -13,6 +13,7 @@ public class LoginResponse {
     private String empresa;
     private Long empresaId;
     private String empresaNombre;
+    private Integer rolId;
     private Integer estado;
     private Integer primerLogin;
 }

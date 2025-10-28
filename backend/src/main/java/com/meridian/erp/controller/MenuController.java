@@ -45,4 +45,13 @@ public class MenuController {
         List<Menu> menus = menuService.findAll();
         return ResponseEntity.ok(ApiResponse.success("Todos los menús obtenidos", menus));
     }
+    
+    /**
+     * Obtiene los menús activos con permisos para un rol específico
+     */
+    @GetMapping("/rol/{rolId}")
+    public ResponseEntity<ApiResponse<List<MenuDTO>>> findByRol(@PathVariable Integer rolId) {
+        List<MenuDTO> menus = menuService.findActiveHierarchicalByRol(rolId);
+        return ResponseEntity.ok(ApiResponse.success("Menús con permisos obtenidos", menus));
+    }
 }
