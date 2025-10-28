@@ -10,10 +10,10 @@ function refreshMenus() {
     showNotification('Menús actualizados exitosamente', 'success');
 }
 
-async function loadModuleContent(ruta, titulo, menuId) {
+async function loadModuleContent(ruta, titulo, param = null) {
     const mainContent = document.querySelector('main');
 
-    console.log('🔍 Cargando módulo:', ruta);
+    console.log('🔍 Cargando módulo:', ruta, param ? `con parámetro: ${param}` : '');
 
     if (!mainContent) {
         console.error('❌ Contenedor main no encontrado');
@@ -33,6 +33,14 @@ async function loadModuleContent(ruta, titulo, menuId) {
 
     try {
         const url = `/modules/${ruta}.html`;
+
+        // Guardar el parámetro en una variable global para que el módulo lo pueda leer
+        if (param !== null) {
+            window.MODULE_PARAM = param;
+            console.log('📦 Parámetro guardado en window.MODULE_PARAM:', param);
+        } else {
+            window.MODULE_PARAM = null;
+        }
 
         const response = await fetch(url);
 
@@ -92,7 +100,20 @@ async function loadDynamicMenus() {
     try {
         showMenuLoading();
 
-        const response = await fetch('/api/menus', {
+        // Obtener el rol del usuario desde localStorage
+        const rolId = localStorage.getItem('rol_id');
+        
+        if (!rolId) {
+            console.error('❌ No se encontró rol_id en localStorage');
+            showMenuError('Error: No se pudo determinar el rol del usuario. Por favor, inicie sesión nuevamente.');
+            return;
+        }
+        
+        const rolIdInt = parseInt(rolId);
+        console.log('🔐 Cargando menús para rol:', rolIdInt);
+
+        // Llamar al endpoint que filtra por rol
+        const response = await fetch(`/api/menus/rol/${rolIdInt}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -108,6 +129,7 @@ async function loadDynamicMenus() {
         if (result.success && result.data) {
             renderDynamicMenus(result.data);
             hideMenuLoading();
+            console.log(`✅ Menús cargados con permisos para rol ${rolIdInt}:`, result.data.length, 'menús');
         } else {
             console.error('Error al cargar menus:', result.message);
             showMenuError('Error al cargar menus: ' + result.message);
@@ -458,6 +480,16 @@ function cargarInformacionEmpresa(userData) {
     // El backend retorna empresaNombre o empresa_nombre del JOIN
     let nombreEmpresaCompleto = userData.empresaNombre || userData.empresa_nombre || userData.empresa || 'EMPRESA SISTEMA';
     
+    // Obtener y guardar el ID de la empresa (IMPORTANTE para módulos)
+    const empresaId = userData.empresaId || userData.empresa_id || localStorage.getItem('empresa_id');
+    if (empresaId) {
+        // Guardar en localStorage para que persista
+        localStorage.setItem('empresa_id', empresaId.toString());
+        // Guardar en variable global para acceso inmediato
+        window.EMPRESA_ID = empresaId.toString();
+        console.log('🏢 Empresa ID guardado:', empresaId);
+    }
+    
     // Dividir el nombre de la empresa para el header y sidebar
     const palabras = nombreEmpresaCompleto.trim().split(' ');
     const nombreEmpresa = palabras[0]; // Primera palabra para el sidebar
@@ -484,7 +516,8 @@ function cargarInformacionEmpresa(userData) {
     console.log('✅ Empresa cargada:', {
         header: nombreEmpresaCompleto,
         sidebar: nombreEmpresa,
-        subtitulo: subtituloEmpresa
+        subtitulo: subtituloEmpresa,
+        empresaId: empresaId
     });
 }
 

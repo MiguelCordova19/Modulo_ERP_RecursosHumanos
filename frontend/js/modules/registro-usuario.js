@@ -4,16 +4,35 @@ window.registroUsuario = {
     empresaNombre: null,
     tempUserData: null,
     modalCredenciales: null,
+    modoEdicion: false,
+    usuarioIdEditar: null,
     
     // Inicializar el módulo
-    init: function() {
+    init: function(usuarioId = null) {
         console.log('✅ Módulo Registro Usuario inicializado');
+        
+        // Detectar modo edición
+        if (usuarioId) {
+            this.modoEdicion = true;
+            this.usuarioIdEditar = usuarioId;
+            console.log('📝 Modo EDICIÓN - Usuario ID:', usuarioId);
+        } else {
+            this.modoEdicion = false;
+            this.usuarioIdEditar = null;
+            console.log('➕ Modo CREACIÓN');
+        }
         
         this.configurarEmpresaUsuario();
         this.cargarTiposDocumento();
         this.cargarRoles();
         this.configurarValidaciones();
         this.inicializarModal();
+        this.configurarModoFormulario();
+        
+        // Si es modo edición, cargar datos del usuario
+        if (this.modoEdicion) {
+            this.cargarDatosUsuario(usuarioId);
+        }
     },
     
     // Inicializar modal
@@ -21,6 +40,66 @@ window.registroUsuario = {
         const modalElement = document.getElementById('modalCredenciales');
         if (modalElement) {
             this.modalCredenciales = new bootstrap.Modal(modalElement);
+        }
+    },
+    
+    // Configurar modo del formulario (crear/editar)
+    configurarModoFormulario: function() {
+        const titulo = $('#tituloModulo');
+        const btnGuardar = $('#btnGuardar');
+        
+        if (this.modoEdicion) {
+            // Modo edición
+            titulo.html('<i class="fas fa-user-edit me-2" style="color: #FF7E70;"></i>Editar Usuario');
+            btnGuardar.html('<i class="fas fa-save me-1"></i>Actualizar');
+        } else {
+            // Modo creación
+            titulo.html('<i class="fas fa-user-plus me-2" style="color: #FF7E70;"></i>Registrar Usuario');
+            btnGuardar.html('<i class="fas fa-arrow-right me-1"></i>Siguiente');
+        }
+    },
+    
+    // Cargar datos del usuario para edición
+    cargarDatosUsuario: async function(usuarioId) {
+        console.log('📥 Cargando datos del usuario:', usuarioId);
+        
+        try {
+            const response = await fetch(`http://localhost:3000/api/usuarios/${usuarioId}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                const usuario = result.data;
+                console.log('✅ Datos del usuario cargados:', usuario);
+                
+                // Llenar el formulario
+                $('#usuarioId').val(usuario.id);
+                $('#fechaNacimiento').val(usuario.fechaNacimiento);
+                $('#tipoDoc').val(usuario.tipoDocumentoId);
+                $('#nroDoc').val(usuario.nroDocumento);
+                $('#nombres').val(usuario.nombres);
+                
+                // Combinar apellidos
+                const apellidoCompleto = `${usuario.apellidoPaterno} ${usuario.apellidoMaterno || ''}`.trim();
+                $('#apellidos').val(apellidoCompleto);
+                
+                $('#rol').val(usuario.rolId);
+                $('#telefono').val(usuario.nroCelular);
+                $('#email').val(usuario.correo);
+                
+                // Validar campos cargados
+                this.validarDocumento();
+                this.validarEmail();
+                this.validarTelefono();
+                
+                console.log('✅ Formulario cargado con datos del usuario');
+            } else {
+                this.showNotification('Error al cargar datos del usuario', 'danger');
+                this.volverALista();
+            }
+        } catch (error) {
+            console.error('❌ Error al cargar usuario:', error);
+            this.showNotification('Error al conectar con el servidor', 'danger');
+            this.volverALista();
         }
     },
     
@@ -253,7 +332,7 @@ window.registroUsuario = {
         return true;
     },
     
-    // Guardar usuario (paso 1: validar datos y abrir modal)
+    // Guardar usuario (paso 1: validar datos y abrir modal o guardar directo)
     guardarUsuario: function() {
         console.log('📋 Validando datos del usuario...');
         
@@ -268,8 +347,6 @@ window.registroUsuario = {
         const apellidoMaterno = apellidos.slice(1).join(' ') || '';
         
         // Guardar datos temporalmente
-        const puestoValor = $('#puesto').val() ? $('#puesto').val().trim() : '';
-        
         this.tempUserData = {
             nombres: $('#nombres').val().trim(),
             apellidoPaterno: apellidoPaterno,
@@ -280,7 +357,7 @@ window.registroUsuario = {
             nroDocumento: $('#nroDoc').val().trim(),
             fechaNacimiento: $('#fechaNacimiento').val(),
             rolId: parseInt($('#rol').val()),
-            puestoId: null, // Por ahora siempre NULL, se puede implementar tabla de puestos después
+            puestoId: null,
             nroCelular: $('#telefono').val().trim(),
             correo: $('#email').val().trim(),
             estado: 1
@@ -288,8 +365,14 @@ window.registroUsuario = {
         
         console.log('📊 Datos temporales guardados');
         
-        // Abrir modal de credenciales
-        this.abrirModalCredenciales();
+        // Si es modo edición, guardar directamente sin pedir credenciales
+        if (this.modoEdicion) {
+            this.tempUserData.id = this.usuarioIdEditar;
+            this.actualizarUsuario();
+        } else {
+            // Modo creación: abrir modal de credenciales
+            this.abrirModalCredenciales();
+        }
     },
     
     // Abrir modal de credenciales
@@ -324,7 +407,7 @@ window.registroUsuario = {
         }
     },
     
-    // Guardar usuario final (paso 2: con credenciales)
+    // Guardar usuario final (paso 2: con credenciales) - Solo para modo creación
     guardarUsuarioFinal: async function() {
         console.log('💾 Guardando usuario con credenciales...');
         
@@ -338,7 +421,7 @@ window.registroUsuario = {
             ...this.tempUserData,
             usuario: $('#username').val().trim(),
             password: $('#password').val(),
-            primerLogin: 1 // Marcar que debe cambiar contraseña en primer login
+            primerLogin: 1
         };
         
         console.log('📤 Enviando datos al backend:', { ...datosCompletos, password: '***' });
@@ -362,14 +445,12 @@ window.registroUsuario = {
             console.log('✅ Respuesta del backend:', result);
             
             if (result.success) {
-                // Cerrar modal
                 if (this.modalCredenciales) {
                     this.modalCredenciales.hide();
                 }
                 
                 this.showNotification(`Usuario "${result.data.usuario}" creado exitosamente`, 'success');
                 
-                // Volver a la lista después de 1.5 segundos
                 setTimeout(() => {
                     this.tempUserData = null;
                     this.volverALista();
@@ -381,7 +462,53 @@ window.registroUsuario = {
             console.error('❌ Error al guardar usuario:', error);
             this.showNotification('Error al conectar con el servidor', 'danger');
         } finally {
-            // Restaurar botón
+            btnGuardar.html(textoOriginal).prop('disabled', false);
+        }
+    },
+    
+    // Actualizar usuario (modo edición)
+    actualizarUsuario: async function() {
+        console.log('💾 Actualizando usuario...');
+        
+        const datosActualizacion = {
+            ...this.tempUserData,
+            id: this.usuarioIdEditar
+        };
+        
+        console.log('📤 Enviando actualización al backend:', datosActualizacion);
+        
+        // Deshabilitar botón de guardar
+        const btnGuardar = $('#btnGuardar');
+        const textoOriginal = btnGuardar.html();
+        btnGuardar.html('<i class="fas fa-spinner fa-spin me-1"></i>Actualizando...').prop('disabled', true);
+        
+        try {
+            const response = await fetch(`http://localhost:3000/api/usuarios/${this.usuarioIdEditar}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datosActualizacion)
+            });
+            
+            const result = await response.json();
+            
+            console.log('✅ Respuesta del backend:', result);
+            
+            if (result.success) {
+                this.showNotification('Usuario actualizado exitosamente', 'success');
+                
+                setTimeout(() => {
+                    this.tempUserData = null;
+                    this.volverALista();
+                }, 1500);
+            } else {
+                this.showNotification(result.message || 'Error al actualizar usuario', 'danger');
+            }
+        } catch (error) {
+            console.error('❌ Error al actualizar usuario:', error);
+            this.showNotification('Error al conectar con el servidor', 'danger');
+        } finally {
             btnGuardar.html(textoOriginal).prop('disabled', false);
         }
     },
@@ -456,7 +583,11 @@ window.registroUsuario = {
         }
         
         console.log('✅ Inicializando módulo de registro de usuario...');
-        window.registroUsuario.init();
+        
+        // Obtener el ID del usuario si viene como parámetro (modo edición)
+        const usuarioId = window.MODULE_PARAM || null;
+        
+        window.registroUsuario.init(usuarioId);
     }
     
     // Iniciar el proceso

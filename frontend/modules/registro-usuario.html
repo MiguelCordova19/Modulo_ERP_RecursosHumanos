@@ -3,7 +3,7 @@
 
 <!-- Formulario de Registro de Usuario -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
+    <h1 class="h2" id="tituloModulo">
         <i class="fas fa-user-plus me-2" style="color: #FF7E70;"></i>
         Registrar Usuario
     </h1>
@@ -24,7 +24,8 @@
     </div>
     <div class="card-body">
         <form id="formUsuario">
-            <!-- Empresa oculta - se toma del usuario logueado -->
+            <!-- Campos ocultos -->
+            <input type="hidden" id="usuarioId">
             <input type="hidden" id="empresa">
             <input type="hidden" id="sede">
             
@@ -98,7 +99,7 @@
                     <i class="fas fa-times me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" class="btn btn-primary" onclick="registroUsuario.guardarUsuario()">
+                <button type="button" class="btn btn-primary" id="btnGuardar" onclick="registroUsuario.guardarUsuario()">
                     <i class="fas fa-arrow-right me-1"></i>
                     Siguiente
                 </button>

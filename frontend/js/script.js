@@ -168,35 +168,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para guardar datos de sesión
     function saveSession(userData) {
         try {
+            console.log('💾 Guardando sesión con datos:', userData);
+            console.log('🔍 rolId recibido:', userData.rolId);
+            console.log('🔍 rol_id recibido:', userData.rol_id);
+            
             // Guardar autenticación
             localStorage.setItem('isAuthenticated', 'true');
             
-            // Guardar datos del usuario
-            localStorage.setItem('usuario_id', userData.usuario_id || '');
+            // Guardar datos del usuario (soportar ambos formatos: camelCase y snake_case)
+            localStorage.setItem('usuario_id', userData.id || userData.usuario_id || '');
             localStorage.setItem('usuario', userData.usuario || '');
-            localStorage.setItem('nombre_completo', userData.nombre_completo || '');
+            localStorage.setItem('nombre_completo', userData.nombreCompleto || userData.nombre_completo || '');
             localStorage.setItem('correo', userData.correo || '');
             
-            // Guardar datos de empresa
-            localStorage.setItem('empresa_id', userData.empresa_id || '');
-            localStorage.setItem('empresa_nombre', userData.empresa_nombre || '');
+            // Guardar datos de empresa (soportar ambos formatos)
+            localStorage.setItem('empresa_id', userData.empresaId || userData.empresa_id || '');
+            localStorage.setItem('empresa_nombre', userData.empresaNombre || userData.empresa_nombre || userData.empresa || '');
             
             // Guardar datos adicionales
-            localStorage.setItem('sede_id', userData.sede_id || '');
-            localStorage.setItem('rol_id', userData.rol_id || '');
-            localStorage.setItem('puesto_id', userData.puesto_id || '');
+            localStorage.setItem('sede_id', userData.sedeId || userData.sede_id || '');
+            
+            // IMPORTANTE: Guardar rol_id (convertir a string si es número)
+            const rolId = userData.rolId || userData.rol_id;
+            if (rolId !== null && rolId !== undefined) {
+                localStorage.setItem('rol_id', String(rolId));
+                console.log('✅ rol_id guardado:', String(rolId));
+            } else {
+                console.warn('⚠️ rolId no encontrado en userData');
+            }
+            
+            localStorage.setItem('puesto_id', userData.puestoId || userData.puesto_id || '');
+            localStorage.setItem('primer_login', userData.primerLogin || userData.primer_login || '0');
             
             // Guardar timestamp de login
             localStorage.setItem('loginTime', new Date().toISOString());
             
-            console.log('✅ Sesión guardada:', {
-                usuario: userData.usuario,
-                empresa: userData.empresa_nombre
+            console.log('✅ Sesión guardada correctamente:', {
+                usuario_id: localStorage.getItem('usuario_id'),
+                usuario: localStorage.getItem('usuario'),
+                empresa_id: localStorage.getItem('empresa_id'),
+                empresa_nombre: localStorage.getItem('empresa_nombre'),
+                rol_id: localStorage.getItem('rol_id')
             });
             
             return true;
         } catch (error) {
-            console.error('Error al guardar sesión:', error);
+            console.error('❌ Error al guardar sesión:', error);
             return false;
         }
     }

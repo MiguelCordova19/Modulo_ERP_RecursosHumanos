@@ -214,7 +214,15 @@ window.usuarios = {
 
     // Funciones de acciones de tabla
     editar: function(id) {
-        this.showNotification(`Editar usuario ID: ${id} (función en desarrollo)`, 'info');
+        console.log('✏️ Editando usuario ID:', id);
+        
+        // Cargar el módulo de registro-usuario en modo edición
+        if (typeof loadModuleContent === 'function') {
+            loadModuleContent('registro-usuario', 'Editar Usuario', id);
+        } else {
+            console.error('❌ Función loadModuleContent no encontrada');
+            this.showNotification('Error al cargar el módulo de edición', 'danger');
+        }
     },
 
     eliminar: async function(id) {
