@@ -1,0 +1,50 @@
+name: Full Code Review
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1️⃣ CodeQL Security Scan
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,python,java  # cambia por los lenguajes de tu repo
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+
+      # 2️⃣ Dependency Scan (Trivy)
+      - name: Trivy FS Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          format: table
+
+      # 3️⃣ Secret Scanning (TruffleHog)
+      - name: Detect Secrets
+        uses: trufflesecurity/trufflehog@v3
+
+      # 4️⃣ Code Style (Ejemplo: JS)
+      - name: Run ESLint
+        run: npx eslint . --max-warnings=0 || true
+
+      # 5️⃣ Test + Coverage (Node.js ejemplo)
+      - name: Install deps & test
+        run: |
+          npm install
+          npm test -- --coverage
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov-report
