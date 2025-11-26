@@ -1,3 +1,61 @@
+<!-- Estilos para los filtros y tabla -->
+<style>
+    /* Filtros en la tabla */
+    #tablaMotivos thead tr.filters th {
+        background-color: #f8f9fa;
+        padding: 6px;
+    }
+    
+    #tablaMotivos thead tr.filters input {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 0.875rem;
+        padding: 4px 8px;
+        height: 32px;
+    }
+    
+    #tablaMotivos thead tr:first-child th {
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    /* Botones de paginación más pequeños */
+    #tablaMotivos_wrapper .dataTables_paginate .paginate_button {
+        padding: 4px 10px !important;
+        font-size: 0.875rem !important;
+        margin: 0 2px !important;
+    }
+    
+    #tablaMotivos_wrapper .dataTables_paginate .paginate_button.current {
+        padding: 4px 10px !important;
+    }
+    
+    /* Selector de registros más pequeño */
+    #tablaMotivos_wrapper .dataTables_length select {
+        padding: 4px 8px;
+        font-size: 0.875rem;
+        height: 32px;
+    }
+    
+    /* Info de registros más pequeña */
+    #tablaMotivos_wrapper .dataTables_info {
+        font-size: 0.875rem;
+        padding-top: 8px;
+    }
+    
+    /* Buscador más pequeño */
+    #tablaMotivos_wrapper .dataTables_filter input {
+        padding: 4px 8px;
+        font-size: 0.875rem;
+        height: 32px;
+    }
+    
+    /* Botones de acción más compactos */
+    .btn-action {
+        padding: 4px 8px !important;
+        font-size: 0.875rem !important;
+    }
+</style>
+
 <!-- Header del módulo -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">
@@ -42,50 +100,38 @@
 <!-- Modal para Nuevo/Editar Motivo -->
 <div class="modal fade" id="modalMotivo" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalMotivoTitle">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    Nuevo Motivo de Préstamo
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title w-100 text-center fw-bold" id="modalMotivoTitle">
+                    Motivo
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body px-4 py-4">
                 <form id="formMotivo">
                     <input type="hidden" id="motivoId">
                     
-                    <div class="mb-3">
-                        <label for="motivoCodigo" class="form-label fw-bold">
-                            Código <span class="text-danger">*</span>
+                    <div class="mb-4">
+                        <label for="motivoDescripcion" class="form-label text-muted mb-2">
+                            Descripcion
                         </label>
-                        <input type="text" class="form-control" id="motivoCodigo" required 
-                               placeholder="Ej: MP001">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="motivoDescripcion" class="form-label fw-bold">
-                            Descripción <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" id="motivoDescripcion" rows="3" required
-                                  placeholder="Descripción del motivo de préstamo"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="motivoEstado" class="form-label fw-bold">Estado</label>
-                        <select class="form-select" id="motivoEstado">
-                            <option value="1" selected>Activo</option>
-                            <option value="0">Inactivo</option>
-                        </select>
+                        <input type="text" 
+                               class="form-control form-control-lg border-2" 
+                               id="motivoDescripcion" 
+                               required 
+                               placeholder="Ingrese la descripción del motivo">
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4 gap-2">
+                <button type="button" 
+                        class="btn btn-outline-secondary btn-lg flex-fill btn-cancelar-motivo">
+                    <i class="fas fa-times me-2"></i>
                     Cancelar
                 </button>
-                <button type="button" class="btn btn-primary btn-guardar-motivo">
-                    <i class="fas fa-save me-1"></i>
+                <button type="button" 
+                        class="btn btn-warning btn-lg flex-fill text-white btn-guardar-motivo">
+                    <i class="fas fa-save me-2"></i>
                     Guardar
                 </button>
             </div>
@@ -95,16 +141,64 @@
 
 <!-- CSS y Scripts -->
 <link rel="stylesheet" href="/css/modules/module-tables.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="/js/modules/motivo-prestamo.js"></script>
 
 <script>
-    $(document).ready(function() {
-        if (typeof motivoPrestamo !== 'undefined') {
-            motivoPrestamo.init();
+// Cargar dependencias si no están cargadas
+(function() {
+    const loadScript = (src, callback) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+            if (callback) callback();
+            return;
         }
-    });
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = callback;
+        document.head.appendChild(script);
+    };
+
+    const loadCSS = (href) => {
+        if (document.querySelector(`link[href="${href}"]`)) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    };
+
+    // Cargar jQuery si no está
+    if (typeof jQuery === 'undefined') {
+        loadScript('https://code.jquery.com/jquery-3.7.0.min.js', () => {
+            loadDependencies();
+        });
+    } else {
+        loadDependencies();
+    }
+
+    function loadDependencies() {
+        // Cargar DataTables
+        if (typeof $.fn.DataTable === 'undefined') {
+            loadScript('https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js', () => {
+                loadScript('https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js', initModule);
+            });
+        } else {
+            initModule();
+        }
+
+        // Cargar SweetAlert2
+        if (typeof Swal === 'undefined') {
+            loadScript('https://cdn.jsdelivr.net/npm/sweetalert2@11');
+        }
+    }
+
+    function initModule() {
+        // Cargar el módulo
+        loadScript('/js/modules/motivo-prestamo.js', () => {
+            setTimeout(() => {
+                if (typeof motivoPrestamo !== 'undefined' && motivoPrestamo.init) {
+                    motivoPrestamo.init();
+                }
+            }, 100);
+        });
+    }
+})();
 </script>

@@ -1,13 +1,25 @@
 // Módulo de Motivo Préstamo con DataTables
-const motivoPrestamo = {
-    table: null,
-    
-    // Inicializar el módulo
-    init: function() {
-        console.log('✅ Módulo Motivo Préstamo inicializado');
-        this.inicializarDataTable();
-        this.configurarEventos();
-    },
+(function() {
+    'use strict';
+
+    window.motivoPrestamo = {
+        table: null,
+        
+        // Inicializar el módulo
+        init: function() {
+            const empresaId = localStorage.getItem('empresa_id') || localStorage.getItem('empresaId');
+            const empresaNombre = localStorage.getItem('empresa_nombre') || 'Desconocida';
+            
+            console.log('✅ Módulo Motivo Préstamo inicializado');
+            console.log('🏢 Empresa:', empresaNombre, '(ID:', empresaId, ')');
+            
+            if (!empresaId) {
+                console.warn('⚠️ ADVERTENCIA: No se encontró empresa_id en localStorage');
+            }
+            
+            this.inicializarDataTable();
+            this.configurarEventos();
+        },
 
     // Inicializar DataTable con filtros en columnas
     inicializarDataTable: function() {
@@ -19,9 +31,13 @@ const motivoPrestamo = {
         }
         
         // Crear la tabla
+        const empresaId = localStorage.getItem('empresa_id') || localStorage.getItem('empresaId') || 1;
+        
+        console.log('📊 Inicializando tabla con empresaId:', empresaId);
+        
         this.table = $('#tablaMotivos').DataTable({
             ajax: {
-                url: '/api/motivos-prestamo',
+                url: `/api/motivos-prestamo?empresaId=${empresaId}`,
                 dataSrc: function(json) {
                     if (json.success && json.data) {
                         return json.data;
@@ -30,7 +46,12 @@ const motivoPrestamo = {
                 },
                 error: function(xhr, error, code) {
                     console.error('Error al cargar datos:', error);
-                    showNotification('Error al cargar los datos', 'danger');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al cargar los datos',
+                        confirmButtonColor: '#ffc107'
+                    });
                 }
             },
             columns: [
@@ -75,10 +96,20 @@ const motivoPrestamo = {
                 }
             ],
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
                 searchPlaceholder: 'Buscar...',
                 search: '_INPUT_',
-                lengthMenu: 'Mostrar _MENU_ registros'
+                lengthMenu: 'Mostrar _MENU_ registros',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+                infoFiltered: '(filtrado de _MAX_ registros totales)',
+                paginate: {
+                    first: 'Primero',
+                    last: 'Último',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
+                },
+                emptyTable: 'No hay datos disponibles',
+                zeroRecords: 'No se encontraron registros coincidentes'
             },
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
@@ -86,25 +117,30 @@ const motivoPrestamo = {
             dom: 'lftip',
             order: [[0, 'asc']],
             initComplete: function() {
-                // Agregar filtros en cada columna
-                this.api().columns([0, 1, 2]).every(function() {
-                    const column = this;
-                    const title = $(column.header()).text();
+                const api = this.api();
+                
+                // Crear una fila de filtros debajo de los encabezados
+                $('#tablaMotivos thead tr').clone(true).addClass('filters').appendTo('#tablaMotivos thead');
+                
+                // Agregar inputs de filtro en la nueva fila
+                $('#tablaMotivos thead tr.filters th').each(function(i) {
+                    const title = $('#tablaMotivos thead tr:first th').eq(i).text();
                     
-                    // Crear input de búsqueda
-                    const input = $('<input type="text" placeholder="Filtrar ' + title + '" />')
-                        .appendTo($(column.header()))
-                        .on('click', function(e) {
-                            e.stopPropagation();
-                        })
-                        .on('keyup change clear', function() {
-                            if (column.search() !== this.value) {
-                                column.search(this.value).draw();
+                    // No agregar filtro en la columna de Acciones
+                    if (i === 3) {
+                        $(this).html('');
+                    } else {
+                        $(this).html('<input type="text" class="form-control form-control-sm" placeholder="Filtrar ' + title + '" />');
+                        
+                        $('input', this).on('keyup change', function() {
+                            if (api.column(i).search() !== this.value) {
+                                api.column(i).search(this.value).draw();
                             }
                         });
+                    }
                 });
                 
-                console.log('✅ DataTable inicializada con filtros');
+                console.log('✅ DataTable inicializada con filtros en fila separada');
             }
         });
     },
@@ -128,6 +164,34 @@ const motivoPrestamo = {
             self.guardar();
         });
         
+        // Botón Cancelar en modal con confirmación
+        $(document).off('click', '.btn-cancelar-motivo').on('click', '.btn-cancelar-motivo', async function() {
+            const descripcion = $('#motivoDescripcion').val().trim();
+            
+            // Si hay datos en el formulario, pedir confirmación
+            if (descripcion) {
+                const result = await Swal.fire({
+                    title: '¿Cancelar?',
+                    text: 'Los cambios no guardados se perderán',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#6c757d',
+                    cancelButtonColor: '#ffc107',
+                    confirmButtonText: '<i class="fas fa-check me-2"></i>Sí, cancelar',
+                    cancelButtonText: '<i class="fas fa-times me-2"></i>No',
+                    reverseButtons: true
+                });
+                
+                if (result.isConfirmed) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalMotivo'));
+                    modal.hide();
+                }
+            } else {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalMotivo'));
+                modal.hide();
+            }
+        });
+        
         // Limpiar formulario al cerrar modal
         $('#modalMotivo').on('hidden.bs.modal', function() {
             $('#formMotivo')[0].reset();
@@ -139,7 +203,14 @@ const motivoPrestamo = {
     actualizar: function() {
         if (this.table) {
             this.table.ajax.reload(null, false);
-            showNotification('Tabla actualizada', 'info');
+            Swal.fire({
+                icon: 'info',
+                title: 'Actualizado',
+                text: 'Tabla actualizada',
+                confirmButtonColor: '#ffc107',
+                timer: 1500,
+                showConfirmButton: false
+            });
         }
     },
 
@@ -147,7 +218,7 @@ const motivoPrestamo = {
     nuevo: function() {
         $('#formMotivo')[0].reset();
         $('#motivoId').val('');
-        $('#modalMotivoTitle').html('<i class="fas fa-plus-circle me-2"></i>Nuevo Motivo de Préstamo');
+        $('#modalMotivoTitle').text('Motivo');
         
         const modal = new bootstrap.Modal(document.getElementById('modalMotivo'));
         modal.show();
@@ -155,34 +226,68 @@ const motivoPrestamo = {
 
     // Guardar motivo (crear o actualizar)
     guardar: async function() {
+        const self = this;
+        
+        // Confirmar con SweetAlert
+        const result = await Swal.fire({
+            title: '¿Confirmar acción?',
+            text: '¿Está seguro de guardar este motivo de préstamo?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ffc107',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-check me-2"></i>Sí, guardar',
+            cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+            reverseButtons: true
+        });
+        
+        if (!result.isConfirmed) {
+            return;
+        }
+        
         try {
             const id = $('#motivoId').val();
-            const codigo = $('#motivoCodigo').val().trim();
             const descripcion = $('#motivoDescripcion').val().trim();
-            const estado = parseInt($('#motivoEstado').val());
 
             // Validaciones
-            if (!codigo || !descripcion) {
-                showNotification('Por favor complete todos los campos requeridos', 'warning');
+            if (!descripcion) {
+                await Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo requerido',
+                    text: 'Por favor ingrese la descripción del motivo',
+                    confirmButtonColor: '#ffc107'
+                });
                 return;
             }
 
-            if (codigo.length < 2) {
-                showNotification('El código debe tener al menos 2 caracteres', 'warning');
+            if (descripcion.length < 3) {
+                await Swal.fire({
+                    icon: 'warning',
+                    title: 'Descripción muy corta',
+                    text: 'La descripción debe tener al menos 3 caracteres',
+                    confirmButtonColor: '#ffc107'
+                });
                 return;
             }
 
-            if (descripcion.length < 5) {
-                showNotification('La descripción debe tener al menos 5 caracteres', 'warning');
-                return;
+            // Obtener empresaId del localStorage (guardado como empresa_id en el login)
+            const empresaId = localStorage.getItem('empresa_id') || localStorage.getItem('empresaId') || 1;
+            
+            if (!empresaId || empresaId === '1') {
+                console.warn('⚠️ No se encontró empresa_id en localStorage, usando empresa por defecto');
             }
-
-            const datos = { codigo, descripcion, estado };
-            const url = id ? `/api/motivos-prestamo/${id}` : '/api/motivos-prestamo';
+            
+            const datos = { 
+                descripcion, 
+                estado: 1,
+                empresaId: parseInt(empresaId)
+            };
+            
+            const url = id ? `/api/motivos-prestamo/${id}?empresaId=${empresaId}` : '/api/motivos-prestamo';
             const method = id ? 'PUT' : 'POST';
 
             // Deshabilitar botón mientras se guarda
-            $('.btn-guardar-motivo').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Guardando...');
+            $('.btn-guardar-motivo').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Guardando...');
 
             const response = await fetch(url, {
                 method,
@@ -192,13 +297,17 @@ const motivoPrestamo = {
                 body: JSON.stringify(datos)
             });
 
-            const result = await response.json();
+            const resultData = await response.json();
 
-            if (result.success) {
-                showNotification(
-                    id ? 'Motivo actualizado exitosamente' : 'Motivo creado exitosamente',
-                    'success'
-                );
+            if (resultData.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: id ? 'Motivo actualizado exitosamente' : 'Motivo creado exitosamente',
+                    confirmButtonColor: '#ffc107',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
 
                 // Cerrar modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalMotivo'));
@@ -207,22 +316,33 @@ const motivoPrestamo = {
                 // Recargar tabla
                 this.table.ajax.reload(null, false);
             } else {
-                showNotification('Error: ' + result.message, 'danger');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: resultData.message || 'Error al guardar el motivo',
+                    confirmButtonColor: '#ffc107'
+                });
             }
 
         } catch (error) {
             console.error('Error al guardar motivo:', error);
-            showNotification('Error al guardar: ' + error.message, 'danger');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar: ' + error.message,
+                confirmButtonColor: '#ffc107'
+            });
         } finally {
             // Rehabilitar botón
-            $('.btn-guardar-motivo').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Guardar');
+            $('.btn-guardar-motivo').prop('disabled', false).html('<i class="fas fa-save me-2"></i>Guardar');
         }
     },
 
     // Editar motivo
     editar: async function(id) {
         try {
-            const response = await fetch(`/api/motivos-prestamo/${id}`);
+            const empresaId = localStorage.getItem('empresa_id') || localStorage.getItem('empresaId') || 1;
+            const response = await fetch(`/api/motivos-prestamo/${id}?empresaId=${empresaId}`);
             
             if (!response.ok) {
                 throw new Error('Error al obtener el motivo');
@@ -234,10 +354,8 @@ const motivoPrestamo = {
                 const motivo = result.data;
                 
                 $('#motivoId').val(motivo.id);
-                $('#motivoCodigo').val(motivo.codigo);
                 $('#motivoDescripcion').val(motivo.descripcion);
-                $('#motivoEstado').val(motivo.estado);
-                $('#modalMotivoTitle').html('<i class="fas fa-edit me-2"></i>Editar Motivo de Préstamo');
+                $('#modalMotivoTitle').text('Motivo');
 
                 const modal = new bootstrap.Modal(document.getElementById('modalMotivo'));
                 modal.show();
@@ -245,47 +363,71 @@ const motivoPrestamo = {
 
         } catch (error) {
             console.error('Error al editar motivo:', error);
-            showNotification('Error al cargar el motivo: ' + error.message, 'danger');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al cargar el motivo: ' + error.message,
+                confirmButtonColor: '#ffc107'
+            });
         }
     },
 
     // Eliminar motivo
     eliminar: async function(id) {
-        // Confirmación con SweetAlert si está disponible, sino con confirm nativo
-        const confirmar = await this.confirmarEliminacion();
+        // Confirmación con SweetAlert
+        const result = await Swal.fire({
+            title: '¿Eliminar motivo?',
+            text: 'Esta acción cambiará el estado del motivo a Inactivo',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-trash me-2"></i>Sí, eliminar',
+            cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+            reverseButtons: true
+        });
         
-        if (!confirmar) {
+        if (!result.isConfirmed) {
             return;
         }
 
         try {
-            const response = await fetch(`/api/motivos-prestamo/${id}`, {
+            const empresaId = localStorage.getItem('empresa_id') || localStorage.getItem('empresaId') || 1;
+            const response = await fetch(`/api/motivos-prestamo/${id}?empresaId=${empresaId}`, {
                 method: 'DELETE'
             });
 
-            const result = await response.json();
+            const resultData = await response.json();
 
-            if (result.success) {
-                showNotification('Motivo eliminado exitosamente', 'success');
+            if (resultData.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: 'Motivo eliminado exitosamente',
+                    confirmButtonColor: '#ffc107',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
                 this.table.ajax.reload(null, false);
             } else {
-                showNotification('Error: ' + result.message, 'danger');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: resultData.message || 'Error al eliminar el motivo',
+                    confirmButtonColor: '#ffc107'
+                });
             }
 
         } catch (error) {
             console.error('Error al eliminar motivo:', error);
-            showNotification('Error al eliminar: ' + error.message, 'danger');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#ffc107'
+            });
         }
-    },
-
-    // Confirmación de eliminación
-    confirmarEliminacion: function() {
-        return new Promise((resolve) => {
-            const confirmar = confirm('¿Está seguro de que desea eliminar este motivo de préstamo?\n\nEsta acción cambiará el estado a Inactivo.');
-            resolve(confirmar);
-        });
     }
 };
 
-// Exportar para uso global
-window.motivoPrestamo = motivoPrestamo;
+})(); // Fin del IIFE
