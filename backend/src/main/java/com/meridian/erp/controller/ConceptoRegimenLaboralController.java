@@ -21,6 +21,23 @@ public class ConceptoRegimenLaboralController {
     private final ConceptoRegimenLaboralService conceptoRegimenLaboralService;
     
     /**
+     * GET /api/conceptos-regimen-laboral/regimenes-activos?empresaId=1
+     * Listar solo los regímenes laborales que tienen conceptos asignados
+     */
+    @GetMapping("/regimenes-activos")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> listarRegimenesActivos(@RequestParam Integer empresaId) {
+        try {
+            List<Map<String, Object>> regimenes = conceptoRegimenLaboralService.listarRegimenesConConceptos(empresaId);
+            return ResponseEntity.ok(
+                ApiResponse.success("Regímenes laborales con conceptos obtenidos exitosamente", regimenes)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al obtener regímenes: " + e.getMessage()));
+        }
+    }
+    
+    /**
      * GET /api/conceptos-regimen-laboral?empresaId=1
      * Listar conceptos por régimen laboral de una empresa
      */

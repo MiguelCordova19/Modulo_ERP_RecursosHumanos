@@ -24,6 +24,25 @@ public class ConceptoRegimenLaboralService {
     private final JdbcTemplate jdbcTemplate;
     
     /**
+     * Listar solo los regímenes laborales que tienen conceptos asignados
+     */
+    public List<Map<String, Object>> listarRegimenesConConceptos(Integer empresaId) {
+        String sql = """
+            SELECT DISTINCT
+                rl.imregimenlaboral_id as id,
+                rl.trl_codsunat as codSunat,
+                rl.trl_regimenlaboral as regimenLaboral,
+                rl.trl_descripcion as descripcion
+            FROM rrhh_conceptos_regimen_laboral cr
+            INNER JOIN rrhh_regimenlaboral rl ON cr.ic_regimenlaboral = rl.imregimenlaboral_id
+            WHERE cr.ic_empresa = ? AND cr.ic_estado = 1 AND rl.estado = 1
+            ORDER BY rl.trl_codsunat
+        """;
+        
+        return jdbcTemplate.queryForList(sql, empresaId);
+    }
+    
+    /**
      * Listar conceptos por régimen laboral con información completa
      */
     public List<Map<String, Object>> listarPorEmpresa(Integer empresaId) {
