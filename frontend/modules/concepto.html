@@ -45,72 +45,77 @@
 <div class="modal fade" id="modalConcepto" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header bg-light">
                 <h5 class="modal-title" id="modalConceptoTitle">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    Nuevo Concepto
+                    Nuevo Conceptos
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formConcepto">
                     <input type="hidden" id="conceptoId">
                     
                     <div class="mb-3">
-                        <label for="conceptoDescripcion" class="form-label fw-bold">
-                            Descripción <span class="text-danger">*</span>
+                        <label for="conceptoTipoConcepto" class="form-label">
+                            Tipo Concepto
                         </label>
-                        <input type="text" class="form-control" id="conceptoDescripcion" required
-                               placeholder="Ej: Comisiones o Destajo">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="conceptoPlame" class="form-label fw-bold">
-                            Concepto Plame <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="conceptoPlame" required
-                               placeholder="Ej: O103 Comisiones o Destajo">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="conceptoTipo" class="form-label fw-bold">
-                            Tipo <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" id="conceptoTipo" required>
-                            <option value="">Seleccionar tipo</option>
-                            <option value="Ingresos">Ingresos</option>
-                            <option value="Descuentos">Descuentos</option>
-                            <option value="Aportaciones">Aportaciones</option>
+                        <select class="form-select" id="conceptoTipoConcepto">
+                            <option value="">--SELECCIONAR--</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="conceptoAfecto" class="form-label fw-bold">
-                            Afecto <span class="text-danger">*</span>
+                        <label for="conceptoNombreTributo" class="form-label">
+                            Nombre Tributo
                         </label>
-                        <select class="form-select" id="conceptoAfecto" required>
-                            <option value="">Seleccionar afecto</option>
-                            <option value="SI">SI</option>
-                            <option value="NO">NO</option>
-                        </select>
+                        <input type="hidden" id="conceptoTributoId">
+                        <input type="text" class="form-control" id="conceptoNombreTributo"
+                               placeholder="Buscar por código o nombre del tributo..."
+                               autocomplete="off">
+                        <div id="tributoSugerencias" class="list-group position-absolute" style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="conceptoEstado" class="form-label fw-bold">Estado</label>
-                        <select class="form-select" id="conceptoEstado">
-                            <option value="1" selected>Activo</option>
-                            <option value="0">Inactivo</option>
+                        <label for="conceptoDescripcion" class="form-label">
+                            Descripción
+                        </label>
+                        <input type="text" class="form-control" id="conceptoDescripcion">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Afecto</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="conceptoAfecto" id="conceptoAfectoSi" value="SI">
+                                <label class="form-check-label" for="conceptoAfectoSi">
+                                    Sí
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="conceptoAfecto" id="conceptoAfectoNo" value="NO" checked>
+                                <label class="form-check-label" for="conceptoAfectoNo">
+                                    No
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="conceptoTipo" class="form-label">
+                            Tipo <span class="text-danger" id="tipoRequerido" style="display: none;">*</span>
+                        </label>
+                        <select class="form-select" id="conceptoTipo" disabled>
+                            <option value="">* SELECCIONAR *</option>
                         </select>
+                        <small class="text-muted" id="tipoAyuda">Este campo se habilitará si selecciona "Afecto: Sí"</small>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" class="btn btn-primary btn-guardar-concepto">
-                    <i class="fas fa-save me-1"></i>
+                <button type="button" class="btn btn-primary btn-guardar-concepto" style="background-color: #d97706; border-color: #d97706;">
                     Guardar
                 </button>
             </div>
@@ -120,15 +125,58 @@
 
 <!-- CSS y Scripts -->
 <link rel="stylesheet" href="/css/modules/module-tables.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<style>
+    #tributoSugerencias {
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 2px;
+    }
+    
+    #tributoSugerencias .list-group-item {
+        cursor: pointer;
+        padding: 10px 15px;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    #tributoSugerencias .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    #tributoSugerencias .list-group-item:last-child {
+        border-bottom: none;
+    }
+    
+    .tributo-codigo {
+        font-weight: bold;
+        color: #007bff;
+        margin-right: 8px;
+    }
+    
+    .tributo-descripcion {
+        color: #495057;
+    }
+</style>
 <script src="/js/modules/concepto.js"></script>
 <script>
-    $(document).ready(function() {
-        if (typeof concepto !== 'undefined') {
-            concepto.init();
+    // Esperar a que jQuery y DataTables estén disponibles
+    (function initConcepto() {
+        if (typeof jQuery === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+            console.log('⏳ Esperando jQuery y DataTables...');
+            setTimeout(initConcepto, 100);
+            return;
         }
-    });
+        
+        console.log('✅ jQuery y DataTables disponibles, inicializando módulo Conceptos');
+        
+        $(document).ready(function() {
+            if (typeof concepto !== 'undefined') {
+                concepto.init();
+            } else {
+                console.error('❌ Módulo concepto no encontrado');
+            }
+        });
+    })();
 </script>
