@@ -1,6 +1,8 @@
-// Módulo de Conceptos por Régimen Laboral con DataTables
+// Módulo de Conceptos por Régimen Laboral - Versión actualizada
 const conceptoRegimenLaboral = {
     table: null,
+    conceptosAgregados: [],
+    conceptoSeleccionado: null,
 
     // Inicializar el módulo
     init: function() {
@@ -10,83 +12,350 @@ const conceptoRegimenLaboral = {
         this.configurarEventos();
     },
 
-    // Cargar regímenes laborales para el filtro y modal
+    // Configurar eventos
+    configurarEventos: function() {
+        const self = this;
+        
+        // Botón Nuevo
+        $(document).off('click', '.btn-nuevo-concepto-regimen').on('click', '.btn-nuevo-concepto-regimen', function() {
+            self.nuevo();
+        });
+        
+        // Botón Actualizar
+        $(document).off('click', '.btn-actualizar-concepto-regimen').on('click', '.btn-actualizar-concepto-regimen', function() {
+            self.actualizar();
+        });
+        
+        // Botón Guardar
+        $(document).off('click', '.btn-guardar-concepto-regimen').on('click', '.btn-guardar-concepto-regimen', function() {
+            self.guardar();
+        });
+        
+        // Autocomplete de conceptos
+        this.configurarAutocompleteConceptos();
+        
+        // Botón agregar concepto
+        $('#btnAgregarConcepto').on('click', function(e) {
+            e.preventDefault();
+            self.agregarConcepto();
+        });
+        
+        // Botón eliminar concepto de la tabla (evento delegado)
+        $(document).off('click', '.btn-eliminar-concepto').on('click', '.btn-eliminar-concepto', function(e) {
+            e.preventDefault();
+            const index = $(this).data('index');
+            self.eliminarConcepto(index);
+        });
+        
+        // Limpiar al cerrar modal
+        $('#modalConceptoRegimen').on('hidden.bs.modal', function() {
+            self.limpiarModal();
+        });
+    },
+
+    // Configurar autocomplete de conceptos
+    configurarAutocompleteConceptos: function() {
+        const self = this;
+        let timeoutId = null;
+        
+        $('#codConcepto').on('input', function() {
+            const busqueda = $(this).val().trim();
+            
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            
+            if (busqueda.length < 1) {
+                $('#conceptoSugerencias').hide().empty();
+                return;
+            }
+            
+            timeoutId = setTimeout(() => {
+                self.buscarConceptos(busqueda);
+            }, 300);
+        });
+        
+        // Cerrar sugerencias al hacer click fuera
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#codConcepto, #conceptoSugerencias').length) {
+                $('#conceptoSugerencias').hide();
+            }
+        });
+    },
+
+    // Buscar conceptos
+    buscarConceptos: async function(busqueda) {
+        try {
+            const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+            const response = await fetch(`/api/conceptos?empresaId=${empresaId}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                // Filtrar conceptos por búsqueda (código SUNAT o descripción)
+                const conceptosFiltrados = result.data.filter(c => {
+                    const codigoConcepto = c.id ? c.id.toString() : '';
+                    const codigoSunat = c.tributoCodigoSunat || '';
+                    const descripcion = c.descripcion || '';
+                    const busquedaLower = busqueda.toLowerCase();
+                    
+                    return codigoConcepto.includes(busqueda) || 
+                           codigoSunat.includes(busqueda) || 
+                           descripcion.toLowerCase().includes(busquedaLower);
+                });
+                
+                this.mostrarSugerenciasConceptos(conceptosFiltrados.slice(0, 10));
+            }
+        } catch (error) {
+            console.error('Error al buscar conceptos:', error);
+        }
+    },
+
+    // Mostrar sugerencias de conceptos
+    mostrarSugerenciasConceptos: function(conceptos) {
+        const container = $('#conceptoSugerencias');
+        container.empty();
+        
+        if (conceptos.length === 0) {
+            container.hide();
+            return;
+        }
+        
+        conceptos.forEach(concepto => {
+            // Mostrar código SUNAT del tributo en lugar del ID del concepto
+            const codigoMostrar = concepto.tributoCodigoSunat || concepto.id;
+            
+            const item = $(`
+                <div class="list-group-item" data-concepto-id="${concepto.id}">
+                    <span class="concepto-codigo">${codigoMostrar}</span>
+                    <span>${concepto.descripcion || 'Sin descripción'}</span>
+                </div>
+            `);
+            
+            item.on('click', () => {
+                this.seleccionarConcepto(concepto);
+            });
+            
+            container.append(item);
+        });
+        
+        container.show();
+    },
+
+    // Seleccionar un concepto
+    seleccionarConcepto: function(concepto) {
+        this.conceptoSeleccionado = concepto;
+        // Mostrar código SUNAT del tributo en lugar del ID del concepto
+        const codigoMostrar = concepto.tributoCodigoSunat || concepto.id;
+        $('#codConcepto').val(codigoMostrar);
+        $('#conceptoNombre').val(concepto.descripcion || 'Sin descripción');
+        $('#conceptoSugerencias').hide().empty();
+        
+        console.log('✅ Concepto seleccionado:', concepto);
+    },
+
+    // Agregar concepto a la tabla
+    agregarConcepto: function() {
+        if (!this.conceptoSeleccionado) {
+            showNotification('Por favor seleccione un concepto', 'warning');
+            return;
+        }
+        
+        // Verificar si ya está agregado
+        const yaExiste = this.conceptosAgregados.find(c => c.id === this.conceptoSeleccionado.id);
+        if (yaExiste) {
+            showNotification('Este concepto ya fue agregado', 'warning');
+            return;
+        }
+        
+        // Agregar a la lista
+        this.conceptosAgregados.push(this.conceptoSeleccionado);
+        
+        // Actualizar tabla
+        this.actualizarTablaConceptos();
+        
+        // Limpiar campos
+        $('#codConcepto').val('');
+        $('#conceptoNombre').val('');
+        this.conceptoSeleccionado = null;
+        
+        showNotification('Concepto agregado', 'success');
+    },
+
+    // Actualizar tabla de conceptos agregados
+    actualizarTablaConceptos: function() {
+        const tbody = $('#tablaConceptosAgregados');
+        tbody.empty();
+        
+        if (this.conceptosAgregados.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        No hay datos disponibles
+                    </td>
+                </tr>
+            `);
+            $('#infoRegistros').text('Mostrando 0 a 0 de 0 registros');
+            return;
+        }
+        
+        this.conceptosAgregados.forEach((concepto, index) => {
+            // Mostrar el código SUNAT del tributo en lugar del ID del concepto
+            const codigoMostrar = concepto.tributoCodigoSunat || concepto.id;
+            
+            const row = $(`
+                <tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td>${codigoMostrar}</td>
+                    <td>${concepto.descripcion || 'Sin descripción'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-danger btn-eliminar-concepto" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+            tbody.append(row);
+        });
+        
+        $('#infoRegistros').text(`Mostrando 1 a ${this.conceptosAgregados.length} de ${this.conceptosAgregados.length} registros`);
+    },
+
+    // Eliminar concepto de la lista
+    eliminarConcepto: function(index) {
+        this.conceptosAgregados.splice(index, 1);
+        this.actualizarTablaConceptos();
+        showNotification('Concepto eliminado', 'info');
+    },
+
+    // Limpiar modal
+    limpiarModal: function() {
+        $('#formConceptoRegimen')[0].reset();
+        $('#conceptoRegimenId').val('');
+        $('#codConcepto').val('');
+        $('#conceptoNombre').val('');
+        $('#conceptoSugerencias').hide().empty();
+        $('#conceptoRegimenLaboral').prop('disabled', false); // Habilitar select
+        this.conceptosAgregados = [];
+        this.conceptoSeleccionado = null;
+        this.actualizarTablaConceptos();
+    },
+
+    // Abrir modal para nuevo
+    nuevo: async function() {
+        this.limpiarModal();
+        $('#modalConceptoRegimenTitle').text('Nuevo Conceptos Por Regimen Laboral');
+        await this.cargarRegimenesLaborales();
+        
+        const modal = new bootstrap.Modal(document.getElementById('modalConceptoRegimen'));
+        modal.show();
+    },
+
+    // Guardar (crear o actualizar)
+    guardar: async function() {
+        try {
+            const regimenId = $('#conceptoRegimenLaboral').val();
+            const conceptoRegimenId = $('#conceptoRegimenId').val(); // ID para edición
+            
+            if (!regimenId) {
+                showNotification('Por favor seleccione un régimen laboral', 'warning');
+                return;
+            }
+            
+            if (this.conceptosAgregados.length === 0) {
+                showNotification('Por favor agregue al menos un concepto', 'warning');
+                return;
+            }
+            
+            // Obtener empresa_id y usuario_id
+            const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID;
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const usuarioId = user.id || user.usuario_id;
+            
+            if (!empresaId) {
+                showNotification('Error: No se encontró el ID de la empresa', 'danger');
+                return;
+            }
+            
+            if (!usuarioId) {
+                showNotification('Error: No se encontró el ID del usuario', 'danger');
+                return;
+            }
+            
+            const conceptosIds = this.conceptosAgregados.map(c => c.id);
+            
+            const datos = {
+                regimenLaboralId: regimenId,
+                empresaId: parseInt(empresaId),
+                conceptos: conceptosIds
+            };
+            
+            console.log('📤 Datos a enviar:', datos);
+            console.log('🔄 Modo:', conceptoRegimenId ? 'Edición' : 'Creación');
+            
+            $('.btn-guardar-concepto-regimen').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Guardando...');
+            
+            // Si hay ID, es edición (primero eliminar y luego crear)
+            if (conceptoRegimenId) {
+                // Eliminar asignaciones anteriores
+                await fetch(`/api/conceptos-regimen-laboral/${conceptoRegimenId}?usuarioId=${usuarioId}`, {
+                    method: 'DELETE'
+                });
+            }
+            
+            // Crear nuevas asignaciones
+            const response = await fetch(`/api/conceptos-regimen-laboral/asignar?usuarioId=${usuarioId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                const mensaje = conceptoRegimenId ? 'Conceptos actualizados exitosamente' : 'Conceptos asignados exitosamente';
+                showNotification(mensaje, 'success');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalConceptoRegimen'));
+                modal.hide();
+                if (this.table) {
+                    this.table.ajax.reload(null, false);
+                }
+            } else {
+                showNotification('Error: ' + result.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            showNotification('Error al guardar: ' + error.message, 'danger');
+        } finally {
+            $('.btn-guardar-concepto-regimen').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Guardar');
+        }
+    },
+
+    // Cargar regímenes laborales
     cargarRegimenesLaborales: async function() {
         try {
             const response = await fetch('/api/regimenes-laborales');
             const result = await response.json();
             
             if (result.success && result.data) {
-                const selectFiltro = $('#selectRegimenLaboral');
                 const selectModal = $('#conceptoRegimenLaboral');
-                
-                // Limpiar opciones existentes (excepto la primera)
-                selectFiltro.find('option:not(:first)').remove();
                 selectModal.find('option:not(:first)').remove();
                 
-                // Agregar opciones
                 result.data.forEach(regimen => {
-                    const optionText = `${regimen.codigo} ${regimen.descripcion}`;
-                    const option = `<option value="${regimen.id}">${optionText}</option>`;
-                    selectFiltro.append(option);
-                    selectModal.append(option);
+                    // Mostrar: CodSunat - Nombre del régimen
+                    const optionText = `${regimen.codSunat} - ${regimen.regimenLaboral}`;
+                    selectModal.append(`<option value="${regimen.id}">${optionText}</option>`);
                 });
+                
+                console.log('✅ Regímenes laborales cargados:', result.data.length);
             }
         } catch (error) {
             console.error('Error al cargar regímenes laborales:', error);
         }
     },
 
-    // Cargar conceptos para el modal
-    cargarConceptosDisponibles: async function() {
-        try {
-            const response = await fetch('/api/conceptos');
-            const result = await response.json();
-            
-            if (result.success && result.data) {
-                const listaConceptos = $('#listaConceptos');
-                listaConceptos.empty();
-                
-                // Agregar checkboxes para cada concepto
-                result.data.forEach(concepto => {
-                    if (concepto.estado === 1) { // Solo conceptos activos
-                        const checkbox = `
-                            <div class="form-check mb-2">
-                                <input class="form-check-input concepto-checkbox" type="checkbox" value="${concepto.id}" id="concepto-${concepto.id}">
-                                <label class="form-check-label" for="concepto-${concepto.id}">
-                                    <strong>${concepto.descripcion}</strong> - ${concepto.concepto_plame}
-                                    <span class="badge ${concepto.tipo === 'Ingresos' ? 'bg-success' : concepto.tipo === 'Descuentos' ? 'bg-danger' : 'bg-info'} badge-estado ms-2">${concepto.tipo}</span>
-                                    <span class="badge ${concepto.afecto === 'SI' ? 'bg-success' : 'bg-warning'} badge-estado ms-1">${concepto.afecto}</span>
-                                </label>
-                            </div>
-                        `;
-                        listaConceptos.append(checkbox);
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error al cargar conceptos:', error);
-        }
-    },
-
-    // Cargar conceptos asignados a un régimen específico
-    cargarConceptosAsignados: async function(regimenId) {
-        try {
-            const response = await fetch(`/api/conceptos-regimen-laboral/${regimenId}/conceptos`);
-            const result = await response.json();
-            
-            if (result.success && result.data) {
-                // Marcar los checkboxes de los conceptos asignados
-                result.data.forEach(conceptoAsignado => {
-                    $(`#concepto-${conceptoAsignado.concepto_id}`).prop('checked', true);
-                });
-            }
-        } catch (error) {
-            console.error('Error al cargar conceptos asignados:', error);
-        }
-    },
-
-    // Inicializar DataTable con filtros en columnas
+    // Inicializar DataTable
     inicializarDataTable: function() {
         const self = this;
         
@@ -95,10 +364,12 @@ const conceptoRegimenLaboral = {
             $('#tablaConceptosRegimen').DataTable().destroy();
         }
         
+        const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+        
         // Crear la tabla
         this.table = $('#tablaConceptosRegimen').DataTable({
             ajax: {
-                url: '/api/regimenes-laborales',
+                url: `/api/conceptos-regimen-laboral?empresaId=${empresaId}`,
                 dataSrc: function(json) {
                     if (json.success && json.data) {
                         return json.data;
@@ -112,19 +383,27 @@ const conceptoRegimenLaboral = {
             },
             columns: [
                 {
-                    data: 'id',
+                    data: 'imconceptosregimen_id',
                     className: 'text-center',
                     width: '80px'
                 },
                 {
-                    data: null,
+                    data: 'regimen_codigo',
+                    className: 'text-center',
+                    width: '100px'
+                },
+                {
+                    data: 'regimen_nombre',
                     render: function(data, type, row) {
-                        return `
-                            <div>
-                                <strong>${row.codigo}</strong> ${row.descripcion}
-                                ${row.estado === 0 ? '<span class="badge bg-danger badge-estado ms-2">Inactivo</span>' : ''}
-                            </div>
-                        `;
+                        return `<div class="text-truncate" style="max-width: 300px;" title="${data}">${data}</div>`;
+                    }
+                },
+                {
+                    data: 'total_conceptos',
+                    className: 'text-center',
+                    width: '150px',
+                    render: function(data, type, row) {
+                        return `<span class="badge bg-info">${data} conceptos</span>`;
                     }
                 },
                 {
@@ -132,33 +411,40 @@ const conceptoRegimenLaboral = {
                     orderable: false,
                     searchable: false,
                     className: 'text-center',
-                    width: '150px',
+                    width: '100px',
                     render: function(data, type, row) {
                         return `
-                            <button class="btn btn-action btn-editar" onclick="conceptoRegimenLaboral.editar(${row.id})" title="Gestionar Conceptos">
-                                <i class="fas fa-cog"></i>
-                            </button>
-                            <button class="btn btn-action btn-eliminar" onclick="conceptoRegimenLaboral.eliminar(${row.id})" title="Eliminar" ${row.estado === 0 ? 'disabled' : ''}>
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-action btn-editar" onclick="conceptoRegimenLaboral.editar(${row.imconceptosregimen_id})" title="Editar">
+                                <i class="fas fa-edit"></i>
                             </button>
                         `;
                     }
                 }
             ],
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
-                searchPlaceholder: 'Buscar régimen laboral...',
+                searchPlaceholder: 'Buscar...',
                 search: '_INPUT_',
-                lengthMenu: 'Mostrar _MENU_ registros'
+                lengthMenu: 'Mostrar _MENU_ registros',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+                infoFiltered: '(filtrado de _MAX_ registros totales)',
+                paginate: {
+                    first: 'Primero',
+                    last: 'Último',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
+                },
+                emptyTable: 'No hay datos disponibles',
+                zeroRecords: 'No se encontraron registros coincidentes'
             },
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
             responsive: true,
             dom: 'lftip',
-            order: [[0, 'asc']],
+            order: [[0, 'desc']],
             initComplete: function() {
                 // Agregar filtros en cada columna
-                this.api().columns([0, 1]).every(function() {
+                this.api().columns([0, 1, 2, 3]).every(function() {
                     const column = this;
                     const title = $(column.header()).text();
                     
@@ -175,193 +461,114 @@ const conceptoRegimenLaboral = {
                         });
                 });
                 
-                console.log('✅ DataTable de regímenes laborales inicializada');
+                console.log('✅ DataTable inicializada con filtros');
             }
         });
     },
 
-    // Configurar eventos del módulo
-    configurarEventos: function() {
-        const self = this;
-        
-        // Botón Nuevo
-        $(document).off('click', '.btn-nuevo-concepto-regimen').on('click', '.btn-nuevo-concepto-regimen', function() {
-            self.nuevo();
-        });
-        
-        // Botón Actualizar
-        $(document).off('click', '.btn-actualizar-concepto-regimen').on('click', '.btn-actualizar-concepto-regimen', function() {
-            self.actualizar();
-        });
-        
-        // Botón Guardar en modal
-        $(document).off('click', '.btn-guardar-concepto-regimen').on('click', '.btn-guardar-concepto-regimen', function() {
-            self.guardar();
-        });
-        
-        // Filtro por régimen laboral
-        $(document).off('change', '#selectRegimenLaboral').on('change', '#selectRegimenLaboral', function() {
-            const regimenId = $(this).val();
-            self.filtrarPorRegimen(regimenId);
-        });
-        
-        // Limpiar formulario al cerrar modal
-        $('#modalConceptoRegimen').on('hidden.bs.modal', function() {
-            $('#formConceptoRegimen')[0].reset();
-            $('#conceptoRegimenId').val('');
-            $('.concepto-checkbox').prop('checked', false);
-        });
-    },
-
-    // Filtrar por régimen laboral
-    filtrarPorRegimen: function(regimenId) {
-        if (this.table) {
-            if (regimenId) {
-                // Buscar por ID del régimen
-                this.table.column(0).search(regimenId).draw();
+    
+    // Editar - Cargar régimen y sus conceptos
+    editar: async function(id) {
+        try {
+            console.log('🔄 Iniciando edición del régimen ID:', id);
+            
+            // Limpiar modal
+            this.limpiarModal();
+            
+            // Cargar regímenes laborales
+            await this.cargarRegimenesLaborales();
+            
+            // Obtener datos del régimen y sus conceptos
+            const response = await fetch(`/api/conceptos-regimen-laboral/${id}/detalles`);
+            const result = await response.json();
+            
+            console.log('📥 Datos recibidos del backend:', result);
+            
+            if (result.success && result.data && result.data.length > 0) {
+                // Guardar el ID para actualizar
+                $('#conceptoRegimenId').val(id);
+                
+                // Obtener el régimen laboral ID del primer detalle
+                const regimenId = result.data[0].regimen_id;
+                console.log('🏢 Régimen ID:', regimenId);
+                
+                $('#conceptoRegimenLaboral').val(regimenId);
+                
+                // Deshabilitar el select de régimen (no se puede cambiar al editar)
+                $('#conceptoRegimenLaboral').prop('disabled', true);
+                
+                // Cargar todos los conceptos de la empresa
+                const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+                const conceptosResponse = await fetch(`/api/conceptos?empresaId=${empresaId}`);
+                const conceptosResult = await conceptosResponse.json();
+                
+                console.log('📦 Conceptos disponibles:', conceptosResult.data?.length || 0);
+                
+                if (conceptosResult.success && conceptosResult.data) {
+                    // Obtener los IDs de conceptos asignados
+                    const conceptosIds = result.data.map(d => parseInt(d.concepto_id));
+                    console.log('🎯 IDs de conceptos asignados:', conceptosIds);
+                    
+                    // Filtrar solo los conceptos que están asignados
+                    this.conceptosAgregados = conceptosResult.data.filter(c => conceptosIds.includes(c.id));
+                    
+                    console.log('✅ Conceptos cargados:', this.conceptosAgregados.length);
+                    
+                    // Actualizar tabla
+                    this.actualizarTablaConceptos();
+                } else {
+                    console.error('❌ Error al cargar conceptos');
+                }
+                
+                // Cambiar título del modal
+                $('#modalConceptoRegimenTitle').text('Editar Conceptos Por Régimen Laboral');
+                
+                // Mostrar modal
+                const modal = new bootstrap.Modal(document.getElementById('modalConceptoRegimen'));
+                modal.show();
+                
+                console.log('✅ Modal abierto para edición');
+            } else if (result.success && result.data && result.data.length === 0) {
+                // No hay conceptos asignados, pero podemos editar
+                showNotification('Este régimen no tiene conceptos asignados aún', 'info');
+                
+                // Obtener el régimen desde la tabla principal
+                const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+                const regimenResponse = await fetch(`/api/conceptos-regimen-laboral?empresaId=${empresaId}`);
+                const regimenResult = await regimenResponse.json();
+                
+                if (regimenResult.success && regimenResult.data) {
+                    const regimen = regimenResult.data.find(r => r.imconceptosregimen_id === id);
+                    if (regimen) {
+                        $('#conceptoRegimenId').val(id);
+                        $('#conceptoRegimenLaboral').val(regimen.ic_regimenlaboral);
+                        $('#conceptoRegimenLaboral').prop('disabled', true);
+                        
+                        $('#modalConceptoRegimenTitle').text('Editar Conceptos Por Régimen Laboral');
+                        const modal = new bootstrap.Modal(document.getElementById('modalConceptoRegimen'));
+                        modal.show();
+                    }
+                }
             } else {
-                this.table.column(0).search('').draw();
+                showNotification('Error al cargar datos del régimen', 'danger');
             }
+        } catch (error) {
+            console.error('❌ Error al editar:', error);
+            showNotification('Error al cargar datos: ' + error.message, 'danger');
         }
     },
+
 
     // Actualizar tabla
     actualizar: function() {
         if (this.table) {
             this.table.ajax.reload(null, false);
-            this.cargarRegimenesLaborales();
             showNotification('Tabla actualizada', 'info');
         }
-    },
-
-    // Abrir modal para nuevo régimen con conceptos
-    nuevo: function() {
-        $('#formConceptoRegimen')[0].reset();
-        $('#conceptoRegimenId').val('');
-        $('#modalConceptoRegimenTitle').html('<i class="fas fa-plus-circle me-2"></i>Asignar Conceptos a Régimen Laboral');
-        
-        // Cargar conceptos disponibles
-        this.cargarConceptosDisponibles();
-        
-        const modal = new bootstrap.Modal(document.getElementById('modalConceptoRegimen'));
-        modal.show();
-    },
-
-    // Editar - Gestionar conceptos de un régimen
-    editar: async function(regimenId) {
-        try {
-            const response = await fetch(`/api/regimenes-laborales/${regimenId}`);
-            const result = await response.json();
-            
-            if (result.success && result.data) {
-                const regimen = result.data;
-                
-                $('#conceptoRegimenId').val(regimen.id);
-                $('#conceptoRegimenLaboral').val(regimen.id);
-                $('#modalConceptoRegimenTitle').html(`<i class="fas fa-edit me-2"></i>Gestionar Conceptos - ${regimen.codigo} ${regimen.descripcion}`);
-                
-                // Cargar conceptos disponibles
-                await this.cargarConceptosDisponibles();
-                
-                // Cargar conceptos asignados
-                await this.cargarConceptosAsignados(regimen.id);
-                
-                const modal = new bootstrap.Modal(document.getElementById('modalConceptoRegimen'));
-                modal.show();
-            }
-        } catch (error) {
-            console.error('Error al cargar régimen:', error);
-            showNotification('Error al cargar el régimen laboral: ' + error.message, 'danger');
-        }
-    },
-
-    // Guardar asignación de conceptos a régimen
-    guardar: async function() {
-        try {
-            const regimenId = $('#conceptoRegimenLaboral').val();
-            
-            // Validaciones
-            if (!regimenId) {
-                showNotification('Por favor seleccione un régimen laboral', 'warning');
-                return;
-            }
-
-            // Obtener conceptos seleccionados
-            const conceptosSeleccionados = [];
-            $('.concepto-checkbox:checked').each(function() {
-                conceptosSeleccionados.push($(this).val());
-            });
-
-            const datos = { 
-                regimen_laboral_id: regimenId,
-                conceptos: conceptosSeleccionados
-            };
-
-            // Deshabilitar botón mientras se guarda
-            $('.btn-guardar-concepto-regimen').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Guardando...');
-
-            const response = await fetch('/api/conceptos-regimen-laboral/asignar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(datos)
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                showNotification('Conceptos asignados exitosamente al régimen laboral', 'success');
-                // Cerrar modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalConceptoRegimen'));
-                modal.hide();
-                // Recargar tabla
-                this.actualizar();
-            } else {
-                showNotification('Error: ' + result.message, 'danger');
-            }
-        } catch (error) {
-            console.error('Error al guardar asignación de conceptos:', error);
-            showNotification('Error al guardar: ' + error.message, 'danger');
-        } finally {
-            // Rehabilitar botón
-            $('.btn-guardar-concepto-regimen').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Guardar');
-        }
-    },
-
-    // Eliminar régimen (cambiar estado a inactivo)
-    eliminar: async function(regimenId) {
-        const confirmar = await this.confirmarEliminacion();
-        
-        if (!confirmar) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/regimenes-laborales/${regimenId}`, {
-                method: 'DELETE'
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                showNotification('Régimen laboral desactivado exitosamente', 'success');
-                this.table.ajax.reload(null, false);
-            } else {
-                showNotification('Error: ' + result.message, 'danger');
-            }
-        } catch (error) {
-            console.error('Error al eliminar régimen laboral:', error);
-            showNotification('Error al eliminar: ' + error.message, 'danger');
-        }
-    },
-
-    // Confirmación de eliminación
-    confirmarEliminacion: function() {
-        return new Promise((resolve) => {
-            const confirmar = confirm('¿Está seguro de que desea desactivar este régimen laboral?\n\nEsta acción cambiará el estado a Inactivo.');
-            resolve(confirmar);
-        });
     }
 };
 
 // Exportar para uso global
-window.conceptoRegimenLaboral = conceptoRegimenLaboral;
+if (typeof window.conceptoRegimenLaboral === 'undefined') {
+    window.conceptoRegimenLaboral = conceptoRegimenLaboral;
+}

@@ -279,7 +279,6 @@ window.roles = {
         }
         
         if (!$('#tablaRoles').length) {
-            console.log('⏳ Esperando tabla en el DOM...');
             setTimeout(inicializarModulo, 100);
             return;
         }

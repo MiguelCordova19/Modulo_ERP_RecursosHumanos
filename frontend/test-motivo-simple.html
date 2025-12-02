@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple - Motivo Préstamo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Test de Conexión - Motivo Préstamo</h1>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>1. Verificar Backend</h5>
+                <button class="btn btn-primary" onclick="testBackend()">Test Backend</button>
+                <pre id="resultBackend" class="mt-2 bg-light p-2" style="display:none;"></pre>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>2. Verificar Base de Datos</h5>
+                <p>Ejecuta esto en PostgreSQL:</p>
+                <pre class="bg-dark text-light p-3">
+SELECT * FROM RRHH_MMOTIVOPRESTAMO;
+SELECT * FROM SP_LISTAR_MOTIVOS_PRESTAMO(1);
+                </pre>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>3. Información del Sistema</h5>
+                <ul>
+                    <li>jQuery: <span id="jqueryVersion">Cargando...</span></li>
+                    <li>DataTables: <span id="datatablesVersion">Cargando...</span></li>
+                    <li>SweetAlert2: <span id="swalVersion">Cargando...</span></li>
+                    <li>LocalStorage empresaId: <span id="empresaId">Cargando...</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // Verificar versiones
+        document.getElementById('jqueryVersion').textContent = typeof jQuery !== 'undefined' ? jQuery.fn.jquery : 'No cargado';
+        document.getElementById('datatablesVersion').textContent = typeof $.fn.DataTable !== 'undefined' ? 'Cargado' : 'No cargado';
+        document.getElementById('swalVersion').textContent = typeof Swal !== 'undefined' ? 'Cargado' : 'No cargado';
+        document.getElementById('empresaId').textContent = localStorage.getItem('empresaId') || 'No definido (usando 1 por defecto)';
+
+        // Si no hay empresaId, establecerlo
+        if (!localStorage.getItem('empresaId')) {
+            localStorage.setItem('empresaId', '1');
+            document.getElementById('empresaId').textContent = '1 (establecido ahora)';
+        }
+
+        async function testBackend() {
+            const resultDiv = document.getElementById('resultBackend');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Probando conexión...';
+
+            try {
+                const empresaId = localStorage.getItem('empresaId') || 1;
+                const response = await fetch(`/api/motivos-prestamo?empresaId=${empresaId}`);
+                const data = await response.json();
+
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'mt-2 bg-success text-white p-2';
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: `Se encontraron ${data.data.length} motivos`,
+                        timer: 2000
+                    });
+                } else {
+                    resultDiv.className = 'mt-2 bg-danger text-white p-2';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error desconocido'
+                    });
+                }
+            } catch (error) {
+                resultDiv.className = 'mt-2 bg-danger text-white p-2';
+                resultDiv.textContent = 'ERROR: ' + error.message;
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    text: 'No se pudo conectar al backend. ¿Está corriendo en el puerto correcto?'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

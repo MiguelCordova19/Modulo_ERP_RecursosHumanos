@@ -16,26 +16,6 @@
     </div>
 </div>
 
-<!-- Filtro de Régimen Laboral -->
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-filter me-1"></i>
-                    Régimen Laboral
-                </h5>
-                <div class="mb-3">
-                    <select class="form-select" id="selectRegimenLaboral">
-                        <option value="">Seleccionar régimen laboral</option>
-                        <!-- Los regímenes se cargarán dinámicamente -->
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Tabla de conceptos por régimen laboral con DataTables -->
 <div class="row">
     <div class="col-12">
@@ -45,7 +25,9 @@
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Código</th>
                             <th>Régimen Laboral</th>
+                            <th>Total Conceptos</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -60,37 +42,82 @@
 
 <!-- Modal para Asignar Conceptos a Régimen -->
 <div class="modal fade" id="modalConceptoRegimen" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header bg-light">
                 <h5 class="modal-title" id="modalConceptoRegimenTitle">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    Asignar Conceptos a Régimen Laboral
+                    Nuevo Conceptos Por Regimen Laboral
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formConceptoRegimen">
                     <input type="hidden" id="conceptoRegimenId">
                     
+                    <!-- Régimen Laboral -->
                     <div class="mb-3">
-                        <label for="conceptoRegimenLaboral" class="form-label fw-bold">
-                            Régimen Laboral <span class="text-danger">*</span>
+                        <label for="conceptoRegimenLaboral" class="form-label">
+                            Regimen Laboral
                         </label>
                         <select class="form-select" id="conceptoRegimenLaboral" required>
-                            <option value="">Seleccionar régimen laboral</option>
+                            <option value="">* SELECCIONE *</option>
                             <!-- Los regímenes se cargarán dinámicamente -->
                         </select>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            Conceptos Disponibles <span class="text-danger">*</span>
-                        </label>
-                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                            <div id="listaConceptos">
-                                <!-- Los conceptos se cargarán dinámicamente -->
+                    <!-- Campos de búsqueda -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="codConcepto" class="form-label">Cod. Concepto</label>
+                            <input type="text" class="form-control" id="codConcepto" 
+                                   placeholder="Ingresa un Concepto" autocomplete="off">
+                            <div id="conceptoSugerencias" class="list-group position-absolute" 
+                                 style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="conceptoNombre" class="form-label">Concepto</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="conceptoNombre" readonly>
+                                <button class="btn btn-primary" type="button" id="btnAgregarConcepto">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabla de conceptos agregados -->
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 80px;">#</th>
+                                    <th>Cod. Concepto</th>
+                                    <th>Conceptos</th>
+                                    <th style="width: 80px;">
+                                        <i class="fas fa-cog"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaConceptosAgregados">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No hay datos disponibles
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted" id="infoRegistros">Mostrando 0 a 0 de 0 registros</small>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnAnterior">
+                                Anterior
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSiguiente">
+                                Siguiente
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -100,7 +127,8 @@
                     <i class="fas fa-times me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" class="btn btn-primary btn-guardar-concepto-regimen">
+                <button type="button" class="btn btn-primary btn-guardar-concepto-regimen" 
+                        style="background-color: #d97706; border-color: #d97706;">
                     <i class="fas fa-save me-1"></i>
                     Guardar
                 </button>
@@ -109,17 +137,53 @@
     </div>
 </div>
 
+<style>
+    #conceptoSugerencias {
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 2px;
+    }
+    
+    #conceptoSugerencias .list-group-item {
+        cursor: pointer;
+        padding: 10px 15px;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    #conceptoSugerencias .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .concepto-codigo {
+        font-weight: bold;
+        color: #007bff;
+        margin-right: 8px;
+    }
+</style>
+
 <!-- CSS y Scripts -->
 <link rel="stylesheet" href="/css/modules/module-tables.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script src="/js/modules/conceptos-regimen-laboral.js"></script>
 <script>
-    $(document).ready(function() {
-        if (typeof conceptoRegimenLaboral !== 'undefined') {
-            conceptoRegimenLaboral.init();
+    // Esperar a que jQuery y DataTables estén disponibles
+    (function initConceptoRegimen() {
+        if (typeof jQuery === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+            console.log('⏳ Esperando jQuery y DataTables...');
+            setTimeout(initConceptoRegimen, 100);
+            return;
         }
-    });
+        
+        console.log('✅ jQuery y DataTables disponibles, inicializando módulo Conceptos por Régimen Laboral');
+        
+        $(document).ready(function() {
+            if (typeof conceptoRegimenLaboral !== 'undefined') {
+                conceptoRegimenLaboral.init();
+            } else {
+                console.error('❌ Módulo conceptoRegimenLaboral no encontrado');
+            }
+        });
+    })();
 </script>

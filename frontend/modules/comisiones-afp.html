@@ -15,6 +15,37 @@
     </div>
 </div>
 
+<!-- Filtro por periodo -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row align-items-end">
+                    <div class="col-md-3">
+                        <label for="filtroPeriodo" class="form-label">
+                            <i class="fas fa-calendar me-1"></i>
+                            Filtrar por Periodo
+                        </label>
+                        <input type="month" class="form-control" id="filtroPeriodo">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary w-100 btn-buscar-periodo">
+                            <i class="fas fa-search me-1"></i>
+                            Buscar
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-secondary w-100 btn-limpiar-filtro">
+                            <i class="fas fa-times me-1"></i>
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Tabla de comisiones con DataTables -->
 <div class="row">
     <div class="col-12">
@@ -24,33 +55,16 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Regimen AFP</th>
-                            <th>Comision Flujo</th>
-                            <th>Comision Anual Saldo</th>
-                            <th>Prima de Seguro</th>
-                            <th>Aporte Obligatorio</th>
-                            <th>Remuneración Max.</th>
+                            <th>Régimen AFP</th>
+                            <th>Periodo</th>
+                            <th>Comisión Flujo %</th>
+                            <th>Comisión Anual</th>
+                            <th>Prima Seguro %</th>
+                            <th>Aporte Oblig. %</th>
+                            <th>Remun. Máx.</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tfoot>
-                        <tr>
-                            <th></th>
-                            <th><input type="text" class="form-control form-control-sm"
-                                    placeholder="Buscar por Regimen AFP..."></th>
-                            <th><input type="text" class="form-control form-control-sm"
-                                    placeholder="Buscar por Comision Flujo..."></th>
-                            <th><input type="text" class="form-control form-control-sm"
-                                    placeholder="Buscar por Comision Anual Saldo..."></th>
-                            <th><input type="text" class="form-control form-control-sm"
-                                    placeholder="Buscar por Prima de Seguro..."></th>
-                            <th><input type="text" class="form-control form-control-sm"
-                                    placeholder="Buscar por Aporte Obligatorio..."></th>
-                            <th><input type="text" class="form-control form-control-sm"
-                                    placeholder="Buscar por Remuneración Max...."></th>
-                            <th></th>
-                        </tr>
-                    </tfoot>
                     <tbody>
                         <!-- Los datos se cargarán dinámicamente -->
                     </tbody>
@@ -61,94 +75,98 @@
 </div>
 
 <!-- Modal para Nuevo/Editar AFP -->
-<div class="modal fade" id="modalAFP" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalAFPTitle">
+<div class="modal fade" id="modalAFP" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width: 550px; margin-top: 5vh;">
+        <div class="modal-content rounded-3 shadow">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title w-100 text-center fw-bold" id="modalAFPTitle">
                     Nuevo AFP
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body px-4 py-3">
                 <form id="formAFP">
                     <input type="hidden" id="afpId">
                     
                     <div class="mb-3">
-                        <label for="afpPeriodo" class="form-label">
+                        <label for="afpPeriodo" class="form-label text-muted mb-1">
                             Periodo
                         </label>
-                        <div class="input-group">
-                            <input type="month" class="form-control" id="afpPeriodo" required>
-                        </div>
+                        <input type="month" class="form-control border-2" id="afpPeriodo" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="afpRegimen" class="form-label text-muted mb-1">
+                            Regimen AFP
+                        </label>
+                        <select class="form-select border-2" id="afpRegimen" required>
+                            <option value="" selected disabled>Cargando regímenes...</option>
+                        </select>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="afpRegimen" class="form-label">
-                                Regimen AFP
-                            </label>
-                            <select class="form-select" id="afpRegimen" required>
-                                <option value="" selected disabled>Seleccione...</option>
-                                <option value="1">Integra</option>
-                                <option value="2">Prima</option>
-                                <option value="3">Profuturo</option>
-                                <option value="4">Habitat</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="afpComisionFlujo" class="form-label">
+                            <label for="afpComisionFlujo" class="form-label text-muted mb-1">
                                 Comisión Flujo %
                             </label>
-                            <input type="number" class="form-control" id="afpComisionFlujo" 
-                                   step="0.01" min="0" max="100" value="0.00" required>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="afpComisionAnual" class="form-label">
-                                Comisión Anual Saldo
-                            </label>
-                            <input type="number" class="form-control" id="afpComisionAnual" 
-                                   step="0.01" min="0" value="0.00" required>
+                            <input type="number" class="form-control border-2 decimal-input" 
+                                   id="afpComisionFlujo" 
+                                   step="0.01" min="0" max="100" 
+                                   placeholder="0.00" required>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="afpPrimaSeguro" class="form-label">
+                            <label for="afpPrimaSeguro" class="form-label text-muted mb-1">
                                 Prima de Seguro %
                             </label>
-                            <input type="number" class="form-control" id="afpPrimaSeguro" 
-                                   step="0.01" min="0" max="100" value="0.00" required>
+                            <input type="number" class="form-control border-2 decimal-input" 
+                                   id="afpPrimaSeguro" 
+                                   step="0.01" min="0" max="100" 
+                                   placeholder="0.00" required>
                         </div>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="afpAporteObligatorio" class="form-label">
-                                Aporte Obligatorio %
+                            <label for="afpComisionAnual" class="form-label text-muted mb-1">
+                                Comisión Anual Saldo
                             </label>
-                            <input type="number" class="form-control" id="afpAporteObligatorio" 
-                                   step="0.01" min="0" max="100" value="0.00" required>
+                            <input type="number" class="form-control border-2 decimal-input" 
+                                   id="afpComisionAnual" 
+                                   step="0.01" min="0" 
+                                   placeholder="0.00" required>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="afpRetencionMaxima" class="form-label">
-                                Retenc. Máxima %
+                            <label for="afpRemuneracionMaxima" class="form-label text-muted mb-1">
+                                Remun. Máxima %
                             </label>
-                            <input type="number" class="form-control" id="afpRetencionMaxima" 
-                                   step="0.01" min="0" max="100" value="0.00" required>
+                            <input type="number" class="form-control border-2 decimal-input" 
+                                   id="afpRemuneracionMaxima" 
+                                   step="0.01" min="0" 
+                                   placeholder="0.00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="afpAporteObligatorio" class="form-label text-muted mb-1">
+                                Aporte Obligatorio %
+                            </label>
+                            <input type="number" class="form-control border-2 decimal-input" 
+                                   id="afpAporteObligatorio" 
+                                   step="0.01" min="0" max="100" 
+                                   placeholder="0.00" required>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <div class="modal-footer border-0 pt-2 px-4 pb-3 gap-2">
+                <button type="button" class="btn btn-outline-secondary flex-fill btn-cancelar-afp">
                     <i class="fas fa-times me-1"></i>
                     Cancelar
                 </button>
-                <button type="button" class="btn btn-success" id="btnGuardarAFP">
+                <button type="button" class="btn btn-warning flex-fill text-white btn-guardar-afp">
                     <i class="fas fa-save me-1"></i>
                     Guardar
                 </button>
@@ -156,6 +174,29 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Validación visual para inputs decimales */
+.decimal-input:invalid {
+    border-color: #dc3545 !important;
+}
+
+.decimal-input:valid {
+    border-color: #198754 !important;
+}
+
+/* Ocultar flechas de input number en Chrome, Safari, Edge */
+.decimal-input::-webkit-outer-spin-button,
+.decimal-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Ocultar flechas de input number en Firefox */
+.decimal-input[type=number] {
+    -moz-appearance: textfield;
+}
+</style>
 
 
 <!-- CSS y Scripts -->

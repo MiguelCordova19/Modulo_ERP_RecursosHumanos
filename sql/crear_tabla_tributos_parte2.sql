@@ -1,0 +1,47 @@
+-- =====================================================
+-- Script: Insertar datos RRHH_MTRIBUTOS - PARTE 2
+-- Descripción: Continuación de tributos SUNAT (27-55)
+-- Fecha: 2025-11-30
+-- =====================================================
+
+-- Insertar datos - PARTE 2 (Registros 27-55)
+INSERT INTO rrhh_mtributos (imtributos_id, it_tid, tt_codsunat, tt_descripcion, estado) VALUES
+('27', '01', '0127', 'INGRESOS DEL CONDUCTOR DE LA MICROEMPRESA - SEGURO REGULAR', 1),
+('28', '02', '0201', 'ASIGNACION FAMILIAR', 1),
+('29', '02', '0202', 'ASIGNACION O BONIFICACION POR EDUCACION (1)', 1),
+('30', '02', '0203', 'ASIGNACION POR CUMPLEAÑOS', 1),
+('31', '02', '0204', 'ASIGNACION POR MATRIMONIO', 1),
+('32', '02', '0205', 'ASIGNACION POR NACIMIENTO DE HIJOS', 1),
+('33', '02', '0206', 'ASIGNACION POR FALLECIMIENTO DE FAMILIARES', 1),
+('34', '02', '0207', 'ASIGNACION POR OTROS MOTIVOS PERSONALES (2)', 1),
+('35', '02', '0208', 'ASIGNACION POR FESTIVIDAD', 1),
+('36', '02', '0209', 'ASIGNACION PROVISIONAL POR DEMANDA DE TRABAJADOR DESPEDIDO', 1),
+('37', '02', '0210', 'ASIGNACION VACACIONAL', 1),
+('38', '02', '0211', 'ASIGNACION POR ESCOLARIDAD 30 JORNALES BASICO', 1),
+('39', '02', '0212', 'ASIGNACIONES OTORGADAS POR UNICA VEZ CON MOTIVO DE CIERTAS CONTINGENCIAS', 1),
+('40', '02', '0213', 'ASIGNACIONES OTORGADAS REGULARMENTE', 1),
+('41', '02', '0214', 'ASIGNACION POR FALLECIMIENTO 1 UIT', 1),
+('42', '03', '0301', 'BONIFICACION POR 25 Y 30 AÑOS DE SERVICIOS', 1),
+('43', '03', '0302', 'BONIFICACION POR CIERRE DE PLIEGO', 1),
+('44', '03', '0303', 'BONIFICACION POR PRODUCCION, ALTURA, TURNO, ETC', 1),
+('45', '03', '0304', 'BONIFICACION POR RIESGO DE CAJA', 1),
+('46', '03', '0305', 'BONIFICACION POR TIEMPO DE SERVICIOS', 1),
+('47', '03', '0306', 'BONIFICACIONES REGULARES', 1),
+('48', '03', '0307', 'BONIFICACIONES CAFAE (3)', 1),
+('49', '03', '0308', 'COMPENSACION POR TRABAJOS EN DIAS DE DESCANSO Y EN FERIADOS', 1),
+('50', '03', '0309', 'BONIFICACION POR TURNO NOCTURNO 20% JORNAL BASICO', 1),
+('51', '03', '0310', 'BONIFICACION CONTACTO DIRECTO CON AGUA 20% JORNAL BASICO', 1),
+('52', '03', '0311', 'BONIFICACION UNIFICADA DE CONSTRUCCION', 1),
+('53', '03', '0312', 'BONIFICACION EXTRAORDINARIA TEMPORAL - LEY 29351', 1),
+('54', '03', '0313', 'BONIFICACION EXTRAORDINARIA PROPORCIONAL - LEY 29351', 1),
+('55', '04', '0401', 'GRATIFICACIONES DE FIESTAS PATRIAS Y NAVIDAD', 1);
+
+-- Verificar datos insertados hasta ahora
+SELECT COUNT(*) as total_registros FROM rrhh_mtributos;
+SELECT * FROM rrhh_mtributos WHERE imtributos_id BETWEEN '27' AND '55' ORDER BY imtributos_id;
+
+-- =====================================================
+-- FIN DE LA PARTE 2 (29 registros insertados)
+-- Total acumulado: 55 registros
+-- Esperar parte 3 para continuar...
+-- =====================================================

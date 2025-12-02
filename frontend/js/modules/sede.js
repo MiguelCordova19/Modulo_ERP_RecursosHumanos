@@ -1,10 +1,10 @@
-// Módulo de Sede con DataTables
+// Módulo de Sedes con DataTables
 const sede = {
     table: null,
 
     // Inicializar el módulo
     init: function() {
-        console.log('✅ Módulo Sede inicializado');
+        console.log('✅ Módulo Sedes inicializado');
         this.inicializarDataTable();
         this.configurarEventos();
     },
@@ -19,9 +19,11 @@ const sede = {
         }
         
         // Crear la tabla
+        const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+        
         this.table = $('#tablaSedes').DataTable({
             ajax: {
-                url: '/api/sedes',
+                url: `/api/sedes?empresaId=${empresaId}`,
                 dataSrc: function(json) {
                     if (json.success && json.data) {
                         return json.data;
@@ -35,11 +37,15 @@ const sede = {
             },
             columns: [
                 {
+                    data: 'id',
+                    className: 'text-center',
+                    width: '80px'
+                },
+                {
                     data: 'codigo',
-                    className: 'text-center fw-bold',
-                    width: '100px',
+                    width: '150px',
                     render: function(data, type, row) {
-                        return `<div title="${data}">${data}</div>`;
+                        return `<span class="badge bg-primary">${data}</span>`;
                     }
                 },
                 {
@@ -53,7 +59,7 @@ const sede = {
                     orderable: false,
                     searchable: false,
                     className: 'text-center',
-                    width: '120px',
+                    width: '150px',
                     render: function(data, type, row) {
                         return `
                             <button class="btn btn-action btn-editar" onclick="sede.editar(${row.id})" title="Editar">
@@ -67,25 +73,34 @@ const sede = {
                 }
             ],
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
-                searchPlaceholder: 'Buscar sede...',
+                searchPlaceholder: 'Buscar...',
                 search: '_INPUT_',
                 lengthMenu: 'Mostrar _MENU_ registros',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ registros'
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+                infoFiltered: '(filtrado de _MAX_ registros totales)',
+                paginate: {
+                    first: 'Primero',
+                    last: 'Último',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
+                },
+                emptyTable: 'No hay datos disponibles',
+                zeroRecords: 'No se encontraron registros coincidentes'
             },
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
             responsive: true,
             dom: 'lftip',
-            order: [[0, 'asc']],
+            order: [[0, 'desc']],
             initComplete: function() {
                 // Agregar filtros en cada columna
-                this.api().columns([0, 1]).every(function() {
+                this.api().columns([0, 1, 2]).every(function() {
                     const column = this;
                     const title = $(column.header()).text();
                     
                     // Crear input de búsqueda
-                    const input = $(`<input type="text" placeholder="Filtrar ${title}" />`)
+                    const input = $(`<input type="text" placeholder="Filtrar '${title}'" />`)
                         .appendTo($(column.header()))
                         .on('click', function(e) {
                             e.stopPropagation();
@@ -97,7 +112,7 @@ const sede = {
                         });
                 });
                 
-                console.log('✅ DataTable de sedes inicializada');
+                console.log('✅ DataTable inicializada con filtros');
             }
         });
     },
@@ -107,7 +122,7 @@ const sede = {
         const self = this;
         
         // Botón Nuevo
-        $(document).off('click', '.btn-nueva-sede').on('click', '.btn-nueva-sede', function() {
+        $(document).off('click', '.btn-nuevo-sede').on('click', '.btn-nuevo-sede', function() {
             self.nuevo();
         });
         
@@ -140,7 +155,7 @@ const sede = {
     nuevo: function() {
         $('#formSede')[0].reset();
         $('#sedeId').val('');
-        $('#modalSedeTitle').text('Registrar Sede');
+        $('#modalSedeTitle').text('Nueva Sede');
         
         const modal = new bootstrap.Modal(document.getElementById('modalSede'));
         modal.show();
@@ -154,27 +169,59 @@ const sede = {
             const descripcion = $('#sedeDescripcion').val().trim();
             
             // Validaciones
-            if (!codigo || !descripcion) {
-                showNotification('Por favor complete todos los campos requeridos', 'warning');
+            if (!codigo) {
+                showNotification('Por favor ingrese el código de la sede', 'warning');
+                $('#sedeCodigo').focus();
                 return;
             }
-
-            if (codigo.length < 2) {
-                showNotification('El código debe tener al menos 2 caracteres', 'warning');
+            
+            if (codigo.length > 20) {
+                showNotification('El código no puede tener más de 20 caracteres', 'warning');
+                $('#sedeCodigo').focus();
                 return;
             }
-
-            if (descripcion.length < 3) {
-                showNotification('La descripción debe tener al menos 3 caracteres', 'warning');
+            
+            if (!descripcion) {
+                showNotification('Por favor ingrese la descripción de la sede', 'warning');
+                $('#sedeDescripcion').focus();
                 return;
             }
-
-            const datos = { codigo, descripcion };
-            const url = id ? `/api/sedes/${id}` : '/api/sedes';
+            
+            if (descripcion.length > 100) {
+                showNotification('La descripción no puede tener más de 100 caracteres', 'warning');
+                $('#sedeDescripcion').focus();
+                return;
+            }
+            
+            // Obtener empresa_id y usuario_id del localStorage
+            const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID;
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const usuarioId = user.id || user.usuario_id;
+            
+            if (!empresaId) {
+                showNotification('Error: No se encontró el ID de la empresa', 'danger');
+                return;
+            }
+            
+            if (!usuarioId) {
+                showNotification('Error: No se encontró el ID del usuario', 'danger');
+                return;
+            }
+            
+            // Preparar datos
+            const datos = {
+                codigo: codigo,
+                descripcion: descripcion,
+                empresaId: parseInt(empresaId)
+            };
+            
+            console.log('📤 Datos a enviar:', datos);
+            
+            const url = id ? `/api/sedes/${id}?usuarioId=${usuarioId}` : `/api/sedes?usuarioId=${usuarioId}`;
             const method = id ? 'PUT' : 'POST';
 
             // Deshabilitar botón mientras se guarda
-            $('.btn-guardar-sede').prop('disabled', true).html('Guardando...');
+            $('.btn-guardar-sede').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Guardando...');
 
             const response = await fetch(url, {
                 method,
@@ -185,6 +232,7 @@ const sede = {
             });
 
             const result = await response.json();
+            
             if (result.success) {
                 showNotification(
                     id ? 'Sede actualizada exitosamente' : 'Sede creada exitosamente',
@@ -203,7 +251,7 @@ const sede = {
             showNotification('Error al guardar: ' + error.message, 'danger');
         } finally {
             // Rehabilitar botón
-            $('.btn-guardar-sede').prop('disabled', false).html('Guardar');
+            $('.btn-guardar-sede').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Guardar');
         }
     },
 
@@ -220,9 +268,13 @@ const sede = {
             if (result.success && result.data) {
                 const sede = result.data;
                 
+                console.log('📝 Sede a editar:', sede);
+                
+                // Establecer valores en el formulario
                 $('#sedeId').val(sede.id);
                 $('#sedeCodigo').val(sede.codigo);
                 $('#sedeDescripcion').val(sede.descripcion);
+                
                 $('#modalSedeTitle').text('Editar Sede');
                 
                 const modal = new bootstrap.Modal(document.getElementById('modalSede'));
@@ -236,14 +288,24 @@ const sede = {
 
     // Eliminar sede
     eliminar: async function(id) {
-        const confirmar = await this.confirmarEliminacion();
+        // Confirmación
+        const confirmar = confirm('¿Está seguro de que desea eliminar esta sede?\n\nEsta acción cambiará el estado a Inactivo.');
         
         if (!confirmar) {
             return;
         }
 
         try {
-            const response = await fetch(`/api/sedes/${id}`, {
+            // Obtener usuario_id del localStorage
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const usuarioId = user.id || user.usuario_id;
+            
+            if (!usuarioId) {
+                showNotification('Error: No se encontró el ID del usuario', 'danger');
+                return;
+            }
+            
+            const response = await fetch(`/api/sedes/${id}?usuarioId=${usuarioId}`, {
                 method: 'DELETE'
             });
 
@@ -258,16 +320,10 @@ const sede = {
             console.error('Error al eliminar sede:', error);
             showNotification('Error al eliminar: ' + error.message, 'danger');
         }
-    },
-
-    // Confirmación de eliminación
-    confirmarEliminacion: function() {
-        return new Promise((resolve) => {
-            const confirmar = confirm('¿Está seguro de que desea eliminar esta sede?');
-            resolve(confirmar);
-        });
     }
 };
 
 // Exportar para uso global
-window.sede = sede;
+if (typeof window.sede === 'undefined') {
+    window.sede = sede;
+}

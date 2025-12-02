@@ -1,0 +1,385 @@
+<!-- Estilos personalizados para el menú de acciones -->
+<style>
+    /* Menú de acciones personalizado */
+    .menu-acciones-contrato {
+        position: fixed;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        min-width: 200px;
+        display: none;
+        padding: 4px 0;
+    }
+    
+    .menu-acciones-contrato.show {
+        display: block;
+    }
+    
+    .menu-acciones-contrato .menu-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #333;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        font-size: 13px;
+    }
+    
+    .menu-acciones-contrato .menu-item:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .menu-acciones-contrato .menu-item i {
+        width: 18px;
+        margin-right: 8px;
+        font-size: 13px;
+    }
+    
+    .menu-acciones-contrato .menu-divider {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 4px 0;
+    }
+    
+    .menu-acciones-contrato .menu-item.danger {
+        color: #dc3545;
+    }
+    
+    /* Overlay para cerrar el menú al hacer clic fuera */
+    .menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9998;
+        display: none;
+    }
+    
+    .menu-overlay.show {
+        display: block;
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-file-contract me-2 text-primary"></i>
+        CONTRATO
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-secondary me-2 btn-consultar-contratos">
+            <i class="fas fa-search me-1"></i>
+            Consultar
+        </button>
+        <button type="button" class="btn btn-primary btn-nuevo-contrato">
+            <i class="fas fa-plus me-1"></i>
+            Nuevo
+        </button>
+    </div>
+</div>
+
+<!-- Filtro de Sede -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label col-form-label-sm">Sede</label>
+            </div>
+            <div class="col-auto">
+                <select class="form-select form-select-sm" id="filtroSede" style="width: 200px;">
+                    <option value="">TODAS</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de contratos -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaContratos" class="table table-striped table-bordered table-hover dataTable" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Sede</th>
+                        <th>Nro Doc</th>
+                        <th>Apellidos y Nombres</th>
+                        <th>Fecha Ingreso</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Sueldo</th>
+                        <th>Tipo Contrato</th>
+                        <th>Hora Laboral</th>
+                        <th>Puesto</th>
+                        <th>F. Fin Cese</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay para cerrar el menú -->
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<!-- Menú flotante de acciones -->
+<div class="menu-acciones-contrato" id="menuAccionesContrato">
+    <input type="hidden" id="contratoIdAccion">
+    <button class="menu-item btn-editar-contrato">
+        <i class="fas fa-edit text-primary"></i>
+        <span>Modificar contrato</span>
+    </button>
+    <button class="menu-item btn-modificar-conceptos">
+        <i class="fas fa-list-alt text-info"></i>
+        <span>Modificar conceptos</span>
+    </button>
+    <button class="menu-item btn-finalizar-contrato">
+        <i class="fas fa-minus-circle text-warning"></i>
+        <span>Finalizar Contrato</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button class="menu-item danger btn-eliminar-contrato">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar contrato</span>
+    </button>
+</div>
+
+<!-- Modal para Nuevo/Editar Contrato -->
+<div class="modal fade" id="modalContrato" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalContratoTitle" style="color: #333;">
+                    Nuevo Contrato
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2" style="max-height: 70vh; overflow-y: auto;">
+                <form id="formContrato">
+                    <input type="hidden" id="contratoId">
+                    
+                    <!-- Fila 1: Buscar Trabajador y Nombre Completo -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="buscarTrabajador" class="form-label form-label-sm" style="color: #666;">
+                                Buscar Trabajador (Doc o Nombre) <span class="text-danger">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <input type="text" class="form-control form-control-sm" id="buscarTrabajador" 
+                                       placeholder="Ingresa DNI, nombre o apellido" 
+                                       autocomplete="off" required>
+                                <input type="hidden" id="trabajadorId">
+                                <!-- Spinner de carga -->
+                                <div id="spinnerBusqueda" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: none;">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Buscando...</span>
+                                    </div>
+                                </div>
+                                <div id="resultadosBusqueda" class="list-group position-absolute" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none; width: 100%;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nombreCompleto" class="form-label form-label-sm" style="color: #666;">
+                                Nombre Completo
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="nombreCompleto" readonly style="background-color: #e9ecef;">
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: Tipo Contrato y Fecha Ingreso Laboral -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="tipoContrato" class="form-label form-label-sm" style="color: #666;">
+                                Tipo Contrato <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="tipoContrato" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fechaIngresoLaboral" class="form-label form-label-sm" style="color: #666;">
+                                Fecha Ingreso Laboral <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control form-control-sm" id="fechaIngresoLaboral" placeholder="DD/MM/YYYY" required>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Fecha Inicio y Fecha Fin -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="fechaInicio" class="form-label form-label-sm" style="color: #666;">
+                                Fecha Inicio <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control form-control-sm" id="fechaInicio" placeholder="DD/MM/YYYY" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fechaFin" class="form-label form-label-sm" style="color: #666;">
+                                Fecha Fin
+                            </label>
+                            <input type="date" class="form-control form-control-sm" id="fechaFin" placeholder="DD/MM/YYYY">
+                            <small class="text-muted">Opcional - Dejar vacío para contratos indefinidos</small>
+                        </div>
+                    </div>
+
+                    <!-- Fila 4: Sede y Puesto -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="sede" class="form-label form-label-sm" style="color: #666;">
+                                Sede <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="sede" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="puesto" class="form-label form-label-sm" style="color: #666;">
+                                Puesto <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="puesto" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fila 5: Turno y Horario -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="turno" class="form-label form-label-sm" style="color: #666;">
+                                Turno <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="turno" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="horario" class="form-label form-label-sm" style="color: #666;">
+                                Horario <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="horario" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fila 6: H. Entrada, H. Salida y Hora Laboral -->
+                    <div class="row mb-2">
+                        <div class="col-md-4">
+                            <label for="horaEntrada" class="form-label form-label-sm" style="color: #666;">
+                                H. Entrada <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control form-control-sm" id="horaEntrada" placeholder="--:--" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="horaSalida" class="form-label form-label-sm" style="color: #666;">
+                                H. Salida <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control form-control-sm" id="horaSalida" placeholder="--:--" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="horaLaboral" class="form-label form-label-sm" style="color: #666;">
+                                Hora Laboral
+                            </label>
+                            <input type="number" class="form-control form-control-sm" id="horaLaboral" step="0.1" value="0.0" readonly style="background-color: #e9ecef;">
+                        </div>
+                    </div>
+
+                    <!-- Fila 7: Día Descanso y Tipo Trabajador -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="diaDescanso" class="form-label form-label-sm" style="color: #666;">
+                                Día Descanso <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="diaDescanso" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipoTrabajador" class="form-label form-label-sm" style="color: #666;">
+                                Tipo Trabajador <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="tipoTrabajador" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fila 8: Régimen Pensionario y Régimen Laboral -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="regimenPensionario" class="form-label form-label-sm" style="color: #666;">
+                                Régimen Pensionario <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="regimenPensionario" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="regimenLaboral" class="form-label form-label-sm" style="color: #666;">
+                                Régimen Laboral <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" id="regimenLaboral" required>
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fila 8.5: CUSPP (solo para AFP) -->
+                    <div class="row mb-2" id="filaCuspp" style="display: none;">
+                        <div class="col-md-12">
+                            <label for="cuspp" class="form-label form-label-sm" style="color: #666;">
+                                CUSPP (Código Único de Sistema Privado de Pensiones) <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="cuspp" 
+                                   placeholder="Ingrese código CUSPP" maxlength="20">
+                            <small class="text-muted">Solo para AFP (Sistema Privado de Pensiones)</small>
+                        </div>
+                    </div>
+
+                    <!-- Fila 9: Remuneración Básica, Remuneración R.C. y Sueldo Total -->
+                    <div class="row mb-2">
+                        <div class="col-md-4">
+                            <label for="remuneracionBasica" class="form-label form-label-sm" style="color: #666;">
+                                Remuneración Básica <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control form-control-sm" id="remuneracionBasica" step="0.01" value="0.00" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="remuneracionRC" class="form-label form-label-sm" style="color: #666;">
+                                Remuneración R.C. <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control form-control-sm" id="remuneracionRC" step="0.01" value="0.00" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="sueldoTotal" class="form-label form-label-sm" style="color: #666;">
+                                Sueldo Total
+                            </label>
+                            <input type="number" class="form-control form-control-sm" id="sueldoTotal" step="0.01" value="0.0" readonly style="background-color: #e9ecef;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-guardar-contrato" style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
