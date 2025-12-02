@@ -33,6 +33,11 @@ public class TrabajadorDTO {
     private String estadoCivilDescripcion;
     private String regimenLaboralDescripcion;
     private String regimenPensionarioDescripcion;
+    private String sedeDescripcion;
+    private String puestoDescripcion;
+    private String turnoDescripcion;
+    private String horarioDescripcion;
+    private String diaDescansoDescripcion;
     
     // Datos Laborales (dinámicos)
     private LocalDate fechaIngreso;

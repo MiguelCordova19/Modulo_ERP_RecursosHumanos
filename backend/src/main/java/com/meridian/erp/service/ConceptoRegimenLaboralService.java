@@ -27,17 +27,20 @@ public class ConceptoRegimenLaboralService {
      * Listar solo los regímenes laborales que tienen conceptos asignados
      */
     public List<Map<String, Object>> listarRegimenesConConceptos(Integer empresaId) {
-        String sql = """
-            SELECT DISTINCT
-                rl.imregimenlaboral_id as id,
-                rl.trl_codsunat as codSunat,
-                rl.trl_regimenlaboral as regimenLaboral,
-                rl.trl_descripcion as descripcion
-            FROM rrhh_conceptos_regimen_laboral cr
-            INNER JOIN rrhh_regimenlaboral rl ON cr.ic_regimenlaboral = rl.imregimenlaboral_id
-            WHERE cr.ic_empresa = ? AND cr.ic_estado = 1 AND rl.estado = 1
-            ORDER BY rl.trl_codsunat
-        """;
+        String sql = "SELECT " +
+                "imconceptosregimen_id as id, " +
+                "ic_regimenlaboral as codsunat, " +
+                "CASE ic_regimenlaboral " +
+                "  WHEN '01' THEN 'Régimen General' " +
+                "  WHEN '02' THEN 'Pequeña Empresa' " +
+                "  WHEN '03' THEN 'Microempresa' " +
+                "  WHEN '04' THEN 'Agrario' " +
+                "  ELSE 'Otro Régimen' " +
+                "END as regimenlaboral, " +
+                "'Régimen Laboral' as descripcion " +
+                "FROM rrhh_conceptos_regimen_laboral " +
+                "WHERE ic_empresa = ? AND ic_estado = 1 " +
+                "ORDER BY ic_regimenlaboral";
         
         return jdbcTemplate.queryForList(sql, empresaId);
     }

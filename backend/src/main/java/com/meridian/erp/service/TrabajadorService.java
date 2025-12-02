@@ -32,6 +32,9 @@ public class TrabajadorService {
     @Autowired
     private com.meridian.erp.repository.RegimenLaboralRepository regimenLaboralRepository;
     
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    
     // Listar todos los trabajadores de una empresa
     public List<TrabajadorDTO> listarPorEmpresa(Integer empresaId) {
         return trabajadorRepository.findByEmpresaIdOrderByApellidoPaternoAsc(empresaId)
@@ -320,9 +323,75 @@ public class TrabajadorService {
         dto.setHoraEntrada(entidad.getHoraEntrada());
         dto.setHoraSalida(entidad.getHoraSalida());
         
+        // Obtener descripciones de datos laborales
+        try {
+            if (entidad.getSedeId() != null) {
+                String sedeSql = "SELECT ts_descripcion FROM rrhh_msede WHERE imsede_id = ?";
+                try {
+                    String sedeDesc = jdbcTemplate.queryForObject(sedeSql, String.class, entidad.getSedeId());
+                    dto.setSedeDescripcion(sedeDesc);
+                } catch (Exception e) {
+                    // Ignorar si no se encuentra
+                }
+            }
+            if (entidad.getPuestoId() != null) {
+                String puestoSql = "SELECT tp_descripcion FROM rrhh_mpuestos WHERE impuesto_id = ?";
+                try {
+                    String puestoDesc = jdbcTemplate.queryForObject(puestoSql, String.class, entidad.getPuestoId());
+                    dto.setPuestoDescripcion(puestoDesc);
+                } catch (Exception e) {
+                    // Ignorar si no se encuentra
+                }
+            }
+            if (entidad.getTurnoId() != null) {
+                String turnoSql = "SELECT tt_descripcion FROM rrhh_mturno WHERE imturno_id = ?";
+                try {
+                    String turnoDesc = jdbcTemplate.queryForObject(turnoSql, String.class, entidad.getTurnoId());
+                    dto.setTurnoDescripcion(turnoDesc);
+                } catch (Exception e) {
+                    // Ignorar si no se encuentra
+                }
+            }
+            if (entidad.getHorarioId() != null) {
+                String horarioSql = "SELECT th_descripcion FROM rrhh_mhorario WHERE imhorario_id = ?";
+                try {
+                    String horarioDesc = jdbcTemplate.queryForObject(horarioSql, String.class, entidad.getHorarioId());
+                    dto.setHorarioDescripcion(horarioDesc);
+                } catch (Exception e) {
+                    // Ignorar si no se encuentra
+                }
+            }
+            if (entidad.getDiaDescanso() != null) {
+                String diaSql = "SELECT tds_descripcion FROM rrhh_mdiasemana WHERE idiasemana_id = ?";
+                try {
+                    String diaDesc = jdbcTemplate.queryForObject(diaSql, String.class, entidad.getDiaDescanso());
+                    dto.setDiaDescansoDescripcion(diaDesc);
+                } catch (Exception e) {
+                    // Ignorar si no se encuentra
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener descripciones laborales: " + e.getMessage());
+        }
+        
         // Datos de Pensión
         dto.setRegimenPensionario(entidad.getRegimenPensionario());
         dto.setCuspp(entidad.getCuspp());
+        
+        // Obtener descripción de régimen pensionario
+        try {
+            if (entidad.getRegimenPensionario() != null) {
+                String regimenSql = "SELECT trp_abreviatura FROM rrhh_mregimenpensionario WHERE trp_codsunat = ?";
+                try {
+                    String regimenDesc = jdbcTemplate.queryForObject(regimenSql, String.class, entidad.getRegimenPensionario());
+                    dto.setRegimenPensionarioDescripcion(regimenDesc);
+                } catch (Exception e) {
+                    // Ignorar si no se encuentra
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener descripción de régimen pensionario: " + e.getMessage());
+        }
         
         // Remuneración
         dto.setTipoPago(entidad.getTipoPago());

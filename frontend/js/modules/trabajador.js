@@ -832,6 +832,50 @@ const trabajador = {
             console.error('Error al cargar regímenes laborales:', error);
         }
     },
+    
+    cargarSedes: async function() {
+        try {
+            const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+            const response = await fetch(`/api/sedes?empresaId=${empresaId}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                const select = $('#sede');
+                select.find('option:not(:first)').remove();
+                
+                result.data.forEach(sede => {
+                    const option = `<option value="${sede.id}">${sede.descripcion}</option>`;
+                    select.append(option);
+                });
+                
+                console.log('✅ Sedes cargadas:', result.data.length);
+            }
+        } catch (error) {
+            console.error('Error al cargar sedes:', error);
+        }
+    },
+    
+    cargarPuestos: async function() {
+        try {
+            const empresaId = localStorage.getItem('empresa_id') || window.EMPRESA_ID || 1;
+            const response = await fetch(`/api/puestos?empresaId=${empresaId}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                const select = $('#puesto');
+                select.find('option:not(:first)').remove();
+                
+                result.data.forEach(puesto => {
+                    const option = `<option value="${puesto.id}">${puesto.descripcion}</option>`;
+                    select.append(option);
+                });
+                
+                console.log('✅ Puestos cargados:', result.data.length);
+            }
+        } catch (error) {
+            console.error('Error al cargar puestos:', error);
+        }
+    },
 
     editar: function(id) {
         showNotification('Funcionalidad de Editar Trabajador en desarrollo', 'info');
@@ -869,6 +913,8 @@ const trabajador = {
                     this.cargarGeneros(),
                     this.cargarEstadosCiviles(),
                     this.cargarRegimenesLaborales(),
+                    this.cargarSedes(),
+                    this.cargarPuestos(),
                     this.cargarTiposPago(),
                     this.cargarBancos(),
                     this.cargarTiposCuenta(),
@@ -900,30 +946,6 @@ const trabajador = {
                 $('#estadoCivil').val(trabajador.estadoCivil);
                 $('#regimenLaboral').val(trabajador.regimenLaboral);
                 
-                // Datos Laborales
-                $('#fechaIngresoLaboral').val(trabajador.fechaIngreso);
-                $('#sede').val(trabajador.sedeId);
-                $('#puesto').val(trabajador.puestoId);
-                $('#turno').val(trabajador.turnoId);
-                $('#horario').val(trabajador.horarioId);
-                $('#diaDescanso').val(trabajador.diaDescanso);
-                $('#horaEntrada').val(trabajador.horaEntrada);
-                $('#horaSalida').val(trabajador.horaSalida);
-                
-                // Datos de Pensión
-                $('#regimenPensionario').val(trabajador.regimenPensionario);
-                $('#cuspp').val(trabajador.cuspp);
-                
-                // Remuneración
-                $('#tipoPago').val(trabajador.tipoPago);
-                $('#banco').val(trabajador.bancoRemuneracion);
-                $('#numeroCuenta').val(trabajador.numeroCuentaRemuneracion);
-                $('#tipoCuenta').val(trabajador.tipoCuenta);
-                
-                // CTS
-                $('#ctsBanco').val(trabajador.bancoCts);
-                $('#ctsNumeroCuenta').val(trabajador.numeroCuentaCts);
-                
                 // Cambiar título y botón
                 $('#modalTrabajadorTitle').text('Editar Trabajador');
                 $('.btn-guardar-trabajador').html('<i class="fas fa-save me-1"></i>Actualizar');
@@ -932,7 +954,43 @@ const trabajador = {
                 self.ajustarFormularioPorTipo(trabajador.tipoTrabajador);
                 
                 // Abrir modal
-                const modal = new bootstrap.Modal(document.getElementById('modalTrabajador'));
+                const modalElement = document.getElementById('modalTrabajador');
+                const modal = new bootstrap.Modal(modalElement);
+                
+                // Esperar a que el modal se abra completamente antes de llenar los campos
+                modalElement.addEventListener('shown.bs.modal', function llenarCampos() {
+                    // Datos Laborales
+                    setTimeout(() => {
+                        $('#fechaIngresoLaboral').val(trabajador.fechaIngreso || '');
+                        $('#sede').val(trabajador.sedeDescripcion || '');
+                        $('#puesto').val(trabajador.puestoDescripcion || '');
+                        $('#turno').val(trabajador.turnoId || '');
+                        $('#horario').val(trabajador.horarioId || '');
+                        $('#diaDescanso').val(trabajador.diaDescanso || '');
+                        $('#horaEntrada').val(trabajador.horaEntrada || '');
+                        $('#horaSalida').val(trabajador.horaSalida || '');
+                        
+                        console.log('✅ Datos laborales insertados en los campos');
+                    }, 100);
+                    
+                    // Datos de Pensión
+                    $('#regimenPensionario').val(trabajador.regimenPensionarioDescripcion || '');
+                    $('#cuspp').val(trabajador.cuspp || '');
+                    
+                    // Remuneración
+                    $('#tipoPago').val(trabajador.tipoPago || '');
+                    $('#banco').val(trabajador.bancoRemuneracion || '');
+                    $('#numeroCuenta').val(trabajador.numeroCuentaRemuneracion || '');
+                    $('#tipoCuenta').val(trabajador.tipoCuenta || '');
+                    
+                    // CTS
+                    $('#ctsBanco').val(trabajador.bancoCts || '');
+                    $('#ctsNumeroCuenta').val(trabajador.numeroCuentaCts || '');
+                    
+                    // Remover el event listener para que no se ejecute múltiples veces
+                    modalElement.removeEventListener('shown.bs.modal', llenarCampos);
+                }, { once: true });
+                
                 modal.show();
                 
             } else {

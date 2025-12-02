@@ -1,68 +1,69 @@
 -- =====================================================
--- Script: Crear tabla RRHH_MPUESTOS
--- Descripción: Tabla de puestos relacionada con grupos
--- Fecha: 2025-12-01
+-- TABLA: RRHH_MPUESTOS (Puestos/Cargos)
+-- Descripción: Tabla maestra de puestos o cargos laborales
 -- =====================================================
 
 -- Eliminar tabla si existe
-DROP TABLE IF EXISTS rrhh_mpuestos CASCADE;
+DROP TABLE IF EXISTS public.rrhh_mpuestos CASCADE;
+
+-- Crear secuencia para el ID
+CREATE SEQUENCE IF NOT EXISTS public.rrhh_mpuestos_impuesto_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 -- Crear tabla
-CREATE TABLE IF NOT EXISTS rrhh_mpuestos (
-    impuesto_id SERIAL PRIMARY KEY,
-    tp_nombre VARCHAR(20) NOT NULL,
+CREATE TABLE public.rrhh_mpuestos (
+    impuesto_id INTEGER DEFAULT nextval('public.rrhh_mpuestos_impuesto_id_seq'::regclass) NOT NULL,
+    tp_codigo VARCHAR(10) NOT NULL,
     tp_descripcion VARCHAR(100) NOT NULL,
-    ip_estado INTEGER DEFAULT 1,
-    ip_empresa INTEGER NOT NULL,
-    ip_usuarioregistro BIGINT,
-    fp_fecharegistro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip_usuarioedito BIGINT,
-    fp_fechaedito TIMESTAMP,
-    ip_usuarioelimino BIGINT,
-    fp_fechaelimino TIMESTAMP
+    tp_empresa INTEGER NOT NULL DEFAULT 1,
+    tp_estado INTEGER DEFAULT 1,
+    tp_usuarioregistro BIGINT,
+    tp_fecharegistro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    tp_usuarioedito BIGINT,
+    tp_fechaedito TIMESTAMP,
+    
+    CONSTRAINT pk_rrhh_mpuestos PRIMARY KEY (impuesto_id),
+    CONSTRAINT uk_rrhh_mpuestos_codigo UNIQUE (tp_codigo, tp_empresa)
 );
 
--- Comentarios en la tabla
-COMMENT ON TABLE rrhh_mpuestos IS 'Tabla de puestos de trabajo';
-COMMENT ON COLUMN rrhh_mpuestos.impuesto_id IS 'ID autoincremental del puesto (PK)';
+-- Comentarios
+COMMENT ON TABLE public.rrhh_mpuestos IS 'Tabla maestra de puestos o cargos laborales';
+COMMENT ON COLUMN public.rrhh_mpuestos.impuesto_id IS 'ID único del puesto';
+COMMENT ON COLUMN public.rrhh_mpuestos.tp_codigo IS 'Código del puesto';
+COMMENT ON COLUMN public.rrhh_mpuestos.tp_descripcion IS 'Descripción del puesto';
+COMMENT ON COLUMN public.rrhh_mpuestos.tp_empresa IS 'ID de la empresa';
+COMMENT ON COLUMN public.rrhh_mpuestos.tp_estado IS 'Estado (1=activo, 0=inactivo)';
 
-COMMENT ON COLUMN rrhh_mpuestos.tp_nombre IS 'Nombre del puesto (máx 20 caracteres)';
-COMMENT ON COLUMN rrhh_mpuestos.tp_descripcion IS 'Descripción del puesto (máx 100 caracteres)';
-COMMENT ON COLUMN rrhh_mpuestos.ip_estado IS 'Estado: 1=Activo, 0=Inactivo';
-COMMENT ON COLUMN rrhh_mpuestos.ip_empresa IS 'ID de la empresa (FK)';
-COMMENT ON COLUMN rrhh_mpuestos.ip_usuarioregistro IS 'ID del usuario que registró';
-COMMENT ON COLUMN rrhh_mpuestos.fp_fecharegistro IS 'Fecha de registro';
-COMMENT ON COLUMN rrhh_mpuestos.ip_usuarioedito IS 'ID del usuario que editó';
-COMMENT ON COLUMN rrhh_mpuestos.fp_fechaedito IS 'Fecha de edición';
-COMMENT ON COLUMN rrhh_mpuestos.ip_usuarioelimino IS 'ID del usuario que eliminó';
-COMMENT ON COLUMN rrhh_mpuestos.fp_fechaelimino IS 'Fecha de eliminación';
+-- Índices
+CREATE INDEX idx_rrhh_mpuestos_empresa ON public.rrhh_mpuestos(tp_empresa);
+CREATE INDEX idx_rrhh_mpuestos_estado ON public.rrhh_mpuestos(tp_estado);
 
--- Índices para mejorar el rendimiento
-CREATE INDEX idx_puestos_empresa ON rrhh_mpuestos(ip_empresa);
-CREATE INDEX idx_puestos_estado ON rrhh_mpuestos(ip_estado);
+-- Insertar datos iniciales
+INSERT INTO public.rrhh_mpuestos (tp_codigo, tp_descripcion, tp_empresa, tp_estado) VALUES
+('001', 'GERENTE GENERAL', 1, 1),
+('002', 'GERENTE DE RECURSOS HUMANOS', 1, 1),
+('003', 'CONTADOR', 1, 1),
+('004', 'ASISTENTE CONTABLE', 1, 1),
+('005', 'JEFE DE VENTAS', 1, 1),
+('006', 'VENDEDOR', 1, 1),
+('007', 'ASISTENTE ADMINISTRATIVO', 1, 1),
+('008', 'RECEPCIONISTA', 1, 1),
+('009', 'ALMACENERO', 1, 1),
+('010', 'CHOFER', 1, 1),
+('011', 'OPERARIO', 1, 1),
+('012', 'SUPERVISOR', 1, 1),
+('013', 'ANALISTA', 1, 1),
+('014', 'ASISTENTE', 1, 1),
+('015', 'PRACTICANTE', 1, 1)
+ON CONFLICT DO NOTHING;
 
-CREATE INDEX idx_puestos_nombre ON rrhh_mpuestos(tp_nombre);
-
--- Constraint único: nombre + empresa (no puede haber nombres duplicados en la misma empresa)
-CREATE UNIQUE INDEX idx_puestos_nombre_empresa ON rrhh_mpuestos(tp_nombre, ip_empresa) WHERE ip_estado = 1;
-
--- Verificar tabla creada
-SELECT 
-    table_name, 
-    column_name, 
-    data_type, 
-    is_nullable,
-    character_maximum_length
-FROM information_schema.columns
-WHERE table_name = 'rrhh_mpuestos'
-ORDER BY ordinal_position;
-
--- Datos de ejemplo (opcional)
--- INSERT INTO rrhh_mpuestos (tp_nombre, tp_descripcion, ip_empresa, ip_usuarioregistro) VALUES
--- ('GERENTE', 'Gerente General', 1, 1),
--- ('ASISTENTE', 'Asistente Administrativo', 1, 1),
--- ('VENDEDOR', 'Vendedor de Campo', 1, 1);
-
--- =====================================================
--- FIN DEL SCRIPT
--- =====================================================
+-- Mensaje de éxito
+DO $$
+BEGIN
+    RAISE NOTICE '✅ Tabla RRHH_MPUESTOS creada exitosamente';
+    RAISE NOTICE '✅ 15 puestos iniciales insertados';
+END $$;
