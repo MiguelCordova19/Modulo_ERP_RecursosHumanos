@@ -45,24 +45,24 @@
 <div class="card shadow-sm">
     <div class="card-body p-2">
         <div class="table-responsive">
-            <table id="tablaTrabajadores" class="table table-striped table-bordered table-hover dt-module-table" style="width:100%; font-size: 11px;">
+            <table id="tablaTrabajadores" class="table table-striped table-bordered table-hover dt-module-table" style="width:100%;">
                 <thead>
                     <tr>
-                        <th style="width: 30px;">#</th>
-                        <th style="width: 80px;">Sede</th>
-                        <th style="width: 50px;">En</th>
-                        <th style="width: 60px;">Tipo Doc.</th>
-                        <th style="width: 90px;">N. Doc.</th>
-                        <th style="width: 200px;">Apellidos y Nombres</th>
-                        <th style="width: 70px;">Sexo</th>
-                        <th style="width: 80px;">F. Nac.</th>
-                        <th style="width: 80px;">F. Ingreso</th>
-                        <th style="width: 120px;">Puesto</th>
-                        <th style="width: 120px;">Régimen Laboral</th>
-                        <th style="width: 100px;">Reg. Pensionario</th>
-                        <th style="width: 80px;">F. Cese</th>
-                        <th style="width: 80px;">Situación</th>
-                        <th style="width: 60px;">Acciones</th>
+                        <th>#</th>
+                        <th>Sede</th>
+                        <th>En</th>
+                        <th>Tipo Doc.</th>
+                        <th>N. Doc.</th>
+                        <th>Apellidos y Nombres</th>
+                        <th>Sexo</th>
+                        <th>F. Nac.</th>
+                        <th>F. Ingreso</th>
+                        <th>Puesto</th>
+                        <th>Régimen Laboral</th>
+                        <th>Reg. Pensionario</th>
+                        <th>F. Cese</th>
+                        <th>Situación</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,20 +134,20 @@
                             <!-- Fila 1: En -->
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label class="form-label fw-bold" style="color: #666;">En</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="en" id="enPlanilla" value="PLANILLA" checked>
-                                            <label class="form-check-label" for="enPlanilla">
-                                                PLANILLA
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="en" id="enRRHH" value="RRHH">
-                                            <label class="form-check-label" for="enRRHH">
-                                                RRHH
-                                            </label>
-                                        </div>
+                                    <label class="form-label fw-bold" style="color: #666;">
+                                        En <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="hidden" id="tipoTrabajador" name="tipoTrabajador" value="01" required>
+                                    <div class="btn-group w-100" role="group" aria-label="Tipo de Trabajador">
+                                        <input type="radio" class="btn-check" name="radioTipoTrabajador" id="radioPlanilla" value="01" checked autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="radioPlanilla">
+                                            <i class="fas fa-briefcase me-1"></i>PLANILLA
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="radioTipoTrabajador" id="radioRRHH" value="02" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="radioRRHH">
+                                            <i class="fas fa-users me-1"></i>RRHH
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -155,49 +155,60 @@
                             <!-- Fila 2: Tipo Documento y Nro. Documento -->
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label for="tipoDocumento" class="form-label" style="color: #666;">Tipo Documento</label>
+                                    <label for="tipoDocumento" class="form-label" style="color: #666;">
+                                        Tipo Documento <span class="text-danger">*</span>
+                                    </label>
                                     <select class="form-select" id="tipoDocumento" required>
                                         <option value="">Seleccione...</option>
-                                        <option value="DNI">DNI</option>
-                                        <option value="CE">Carnet de Extranjería</option>
-                                        <option value="PASAPORTE">Pasaporte</option>
                                     </select>
                                 </div>
                                 <div class="col-md-8">
-                                    <label for="nroDocumento" class="form-label" style="color: #666;">Nro. Documento</label>
-                                    <input type="text" class="form-control" id="nroDocumento" required>
+                                    <label for="nroDocumento" class="form-label" style="color: #666;">
+                                        Nro. Documento <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="nroDocumento" required maxlength="20">
                                 </div>
                             </div>
 
                             <!-- Fila 3: Apellidos y Nombres -->
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label for="apPaterno" class="form-label" style="color: #666;">Ap. Paterno</label>
-                                    <input type="text" class="form-control" id="apPaterno" required>
+                                    <label for="apPaterno" class="form-label" style="color: #666;">
+                                        Ap. Paterno <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="apPaterno" required maxlength="50">
                                 </div>
                                 <div class="col-md-4">
                                     <label for="apMaterno" class="form-label" style="color: #666;">Ap. Materno</label>
-                                    <input type="text" class="form-control" id="apMaterno" required>
+                                    <input type="text" class="form-control" id="apMaterno" maxlength="50">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="nombres" class="form-label" style="color: #666;">Nombres</label>
-                                    <input type="text" class="form-control" id="nombres" required>
+                                    <label for="nombres" class="form-label" style="color: #666;">
+                                        Nombres <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="nombres" required maxlength="50">
                                 </div>
                             </div>
 
                             <!-- Fila 4: Contacto -->
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label for="telefono" class="form-label" style="color: #666;">Nro. Teléfono/Celular</label>
-                                    <input type="text" class="form-control" id="telefono">
+                                    <label for="telefono" class="form-label" style="color: #666;">
+                                        Nro. Teléfono/Celular <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="telefono" required maxlength="20">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="correo" class="form-label" style="color: #666;">Correo</label>
-                                    <input type="email" class="form-control" id="correo">
+                                    <label for="correo" class="form-label" style="color: #666;">
+                                        Correo <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="email" class="form-control" id="correo" required maxlength="50">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="fechaNacimiento" class="form-label" style="color: #666;">F. Nacimiento</label>
-                                    <input type="date" class="form-control" id="fechaNacimiento">
+                                    <label for="fechaNacimiento" class="form-label" style="color: #666;">
+                                        F. Nacimiento <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" id="fechaNacimiento" required>
                                 </div>
                             </div>
 
@@ -255,27 +266,39 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="turno" class="form-label" style="color: #666;">Turno</label>
-                                    <input type="text" class="form-control" id="turno" readonly>
+                                    <select class="form-select" id="turno" disabled>
+                                        <option value="">Seleccione...</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="horario" class="form-label" style="color: #666;">Horario</label>
-                                    <input type="text" class="form-control" id="horario" readonly>
+                                    <select class="form-select" id="horario" disabled>
+                                        <option value="">Seleccione...</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="diaDescanso" class="form-label" style="color: #666;">Día Descanso</label>
-                                    <input type="text" class="form-control" id="diaDescanso" readonly>
+                                    <select class="form-select" id="diaDescanso" disabled>
+                                        <option value="">Seleccione...</option>
+                                    </select>
                                 </div>
                             </div>
 
                             <!-- Fila 3: H. Entrada, H. Salida -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="horaEntrada" class="form-label" style="color: #666;">H. Entrada</label>
-                                    <input type="text" class="form-control" id="horaEntrada" placeholder="--:--" readonly>
+                                    <label for="horaEntrada" class="form-label" style="color: #666;">
+                                        <i class="fas fa-clock me-1"></i>H. Entrada
+                                    </label>
+                                    <input type="time" class="form-control" id="horaEntrada" readonly>
+                                    <small class="form-text text-muted">Formato 24 horas (ej: 08:00)</small>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="horaSalida" class="form-label" style="color: #666;">H. Salida</label>
-                                    <input type="text" class="form-control" id="horaSalida" placeholder="--:--" readonly>
+                                    <label for="horaSalida" class="form-label" style="color: #666;">
+                                        <i class="fas fa-clock me-1"></i>H. Salida
+                                    </label>
+                                    <input type="time" class="form-control" id="horaSalida" readonly>
+                                    <small class="form-text text-muted">Formato 24 horas (ej: 17:00)</small>
                                 </div>
                             </div>
 
@@ -310,34 +333,27 @@
                             <!-- Fila 1: Tipo Pago, Banco, Tipo Cuenta -->
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label for="tipoPago" class="form-label" style="color: #666;">Tipo Pago</label>
-                                    <select class="form-select" id="tipoPago">
+                                    <label for="tipoPago" class="form-label" style="color: #666;">
+                                        Tipo Pago <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="tipoPago" required>
                                         <option value="">Seleccione...</option>
-                                        <option value="EFECTIVO">Efectivo</option>
-                                        <option value="DEPOSITO">Depósito Bancario</option>
-                                        <option value="TRANSFERENCIA">Transferencia</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="banco" class="form-label" style="color: #666;">Banco</label>
-                                    <select class="form-select" id="banco">
+                                    <label for="banco" class="form-label" style="color: #666;">
+                                        Banco <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="banco" required>
                                         <option value="">Seleccione...</option>
-                                        <option value="BCP">Banco de Crédito del Perú</option>
-                                        <option value="BBVA">BBVA</option>
-                                        <option value="INTERBANK">Interbank</option>
-                                        <option value="SCOTIABANK">Scotiabank</option>
-                                        <option value="BANBIF">BanBif</option>
-                                        <option value="PICHINCHA">Banco Pichincha</option>
-                                        <option value="OTROS">Otros</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="tipoCuenta" class="form-label" style="color: #666;">Tipo Cuenta</label>
-                                    <select class="form-select" id="tipoCuenta">
+                                    <label for="tipoCuenta" class="form-label" style="color: #666;">
+                                        Tipo Cuenta <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="tipoCuenta" required>
                                         <option value="">Seleccione...</option>
-                                        <option value="AHORROS">Ahorros</option>
-                                        <option value="CORRIENTE">Corriente</option>
-                                        <option value="CCI">CCI</option>
                                     </select>
                                 </div>
                             </div>
@@ -345,8 +361,14 @@
                             <!-- Fila 2: N. Cuenta -->
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label for="numeroCuenta" class="form-label" style="color: #666;">N. Cuenta</label>
-                                    <input type="text" class="form-control" id="numeroCuenta" placeholder="Ingrese el número de cuenta">
+                                    <label for="numeroCuenta" class="form-label" style="color: #666;">
+                                        N. Cuenta <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="numeroCuenta" required 
+                                           maxlength="20" minlength="10" 
+                                           pattern="[0-9-]+" 
+                                           placeholder="10-20 dígitos (puede incluir guiones)">
+                                    <small class="form-text text-muted">Solo números y guiones. Mínimo 10, máximo 20 dígitos.</small>
                                 </div>
                             </div>
                         </form>
@@ -358,21 +380,22 @@
                             <!-- Fila 1: Banco y N. Cuenta -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="ctsBanco" class="form-label" style="color: #666;">Banco</label>
-                                    <select class="form-select" id="ctsBanco">
+                                    <label for="ctsBanco" class="form-label" style="color: #666;">
+                                        Banco <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="ctsBanco" required>
                                         <option value="">Seleccione...</option>
-                                        <option value="BCP">Banco de Crédito del Perú</option>
-                                        <option value="BBVA">BBVA</option>
-                                        <option value="INTERBANK">Interbank</option>
-                                        <option value="SCOTIABANK">Scotiabank</option>
-                                        <option value="BANBIF">BanBif</option>
-                                        <option value="PICHINCHA">Banco Pichincha</option>
-                                        <option value="OTROS">Otros</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="ctsNumeroCuenta" class="form-label" style="color: #666;">N. Cuenta</label>
-                                    <input type="text" class="form-control" id="ctsNumeroCuenta" placeholder="Ingrese el número de cuenta CTS">
+                                    <label for="ctsNumeroCuenta" class="form-label" style="color: #666;">
+                                        N. Cuenta <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="ctsNumeroCuenta" required 
+                                           maxlength="20" minlength="10" 
+                                           pattern="[0-9-]+" 
+                                           placeholder="10-20 dígitos (puede incluir guiones)">
+                                    <small class="form-text text-muted">Solo números y guiones. Mínimo 10, máximo 20 dígitos.</small>
                                 </div>
                             </div>
 
@@ -492,45 +515,8 @@
 
 <!-- CSS y Scripts -->
 <link rel="stylesheet" href="/css/modules/module-tables.css">
-<style>
-    /* Estilos específicos para tabla de trabajadores */
-    #tablaTrabajadores {
-        font-size: 11px !important;
-    }
-    
-    #tablaTrabajadores thead th {
-        font-size: 11px !important;
-        padding: 8px 4px !important;
-        white-space: nowrap;
-    }
-    
-    #tablaTrabajadores tbody td {
-        font-size: 11px !important;
-        padding: 6px 4px !important;
-        white-space: nowrap;
-    }
-    
-    #tablaTrabajadores thead tr.filters input {
-        font-size: 10px !important;
-        padding: 2px 4px !important;
-    }
-    
-    /* Hacer los controles de DataTables más pequeños */
-    #tablaTrabajadores_wrapper .dataTables_length,
-    #tablaTrabajadores_wrapper .dataTables_info,
-    #tablaTrabajadores_wrapper .dataTables_paginate {
-        font-size: 11px !important;
-    }
-    
-    #tablaTrabajadores_wrapper .dataTables_length select {
-        font-size: 11px !important;
-        padding: 2px 6px !important;
-        height: 24px !important;
-    }
-</style>
-<script src="/js/modules/trabajador.js"></script>
 <script>
-    // Esperar a que jQuery y DataTables estén disponibles
+    // Esperar a que jQuery, DataTables y el módulo trabajador estén disponibles
     (function initTrabajador() {
         if (typeof jQuery === 'undefined' || typeof $.fn.DataTable === 'undefined') {
             console.log('⏳ Esperando jQuery y DataTables...');
@@ -538,14 +524,15 @@
             return;
         }
         
-        console.log('✅ jQuery y DataTables disponibles, inicializando módulo Trabajador');
+        console.log('✅ jQuery y DataTables disponibles');
         
-        $(document).ready(function() {
-            if (typeof trabajador !== 'undefined') {
-                trabajador.init();
-            } else {
-                console.error('❌ Módulo trabajador no encontrado');
-            }
-        });
+        // Inicializar el módulo
+        if (typeof window.trabajador !== 'undefined') {
+            console.log('✅ Módulo trabajador encontrado, inicializando...');
+            window.trabajador.init();
+        } else {
+            console.log('✅ Módulo trabajador ya existe, inicializando...');
+            window.trabajador.init();
+        }
     })();
 </script>
