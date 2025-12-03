@@ -72,6 +72,23 @@ public class ConceptoRegimenLaboralController {
     }
     
     /**
+     * GET /api/conceptos-regimen-laboral/{regimenLaboralId}/conceptos
+     * Obtener conceptos asignados a un régimen laboral para cargar en el modal de contrato
+     */
+    @GetMapping("/{regimenLaboralId}/conceptos")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> obtenerConceptosPorRegimen(@PathVariable String regimenLaboralId) {
+        try {
+            List<Map<String, Object>> conceptos = conceptoRegimenLaboralService.obtenerConceptosPorRegimen(regimenLaboralId);
+            return ResponseEntity.ok(
+                ApiResponse.success("Conceptos del régimen laboral obtenidos exitosamente", conceptos)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Error al obtener conceptos del régimen: " + e.getMessage()));
+        }
+    }
+    
+    /**
      * POST /api/conceptos-regimen-laboral/asignar?usuarioId=1
      * Asignar conceptos a un régimen laboral
      */

@@ -383,3 +383,82 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Conceptos Del Trabajador -->
+<div class="modal fade" id="modalConceptosTrabajador" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title fw-bold w-100 text-center" style="color: #333;">
+                    Conceptos Del Trabajador
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <!-- Información del Trabajador -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label form-label-sm" style="color: #666;">Nro. Documento</label>
+                        <input type="text" class="form-control form-control-sm" id="conceptoNroDocumento" readonly style="background-color: #f8f9fa;">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label form-label-sm" style="color: #666;">Trabajador</label>
+                        <input type="text" class="form-control form-control-sm" id="conceptoTrabajador" readonly style="background-color: #f8f9fa;">
+                    </div>
+                </div>
+
+                <!-- Búsqueda de Conceptos -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label form-label-sm" style="color: #666;">Cod. Concepto</label>
+                        <input type="text" class="form-control form-control-sm" id="conceptoCodigo" placeholder="Ingresa un Concepto">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label form-label-sm" style="color: #666;">Concepto</label>
+                        <input type="text" class="form-control form-control-sm" id="conceptoDescripcion" readonly style="background-color: #f8f9fa;">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="button" class="btn btn-sm w-100" style="background-color: #ff8c00; border-color: #ff8c00; color: white;" id="btnAgregarConcepto">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Conceptos -->
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-bordered table-hover" style="font-size: 13px;">
+                        <thead style="position: sticky; top: 0; background-color: #e9ecef; z-index: 1;">
+                            <tr>
+                                <th style="width: 50px; text-align: center;">#</th>
+                                <th style="width: 100px; text-align: center;">Cod.</th>
+                                <th style="text-align: center;">Concepto</th>
+                                <th style="width: 120px; text-align: center;">Tipo</th>
+                                <th style="width: 150px; text-align: center;">Tipo Valor</th>
+                                <th style="width: 60px; text-align: center;">
+                                    <i class="fas fa-cog"></i>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaConceptosTrabajadorBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    No hay conceptos asignados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-3">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn" style="background-color: #ff8c00; border-color: #ff8c00; color: white;" id="btnGuardarConceptos">
+                    <i class="fas fa-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

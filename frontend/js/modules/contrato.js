@@ -455,10 +455,10 @@ const contrato = {
     seleccionarTrabajador: function(id, nombreCompleto, dni) {
         $('#trabajadorId').val(id);
         $('#nombreCompleto').val(nombreCompleto);
-        $('#buscarTrabajador').val(dni); // Solo el DNI en el campo de búsqueda
+        $('#buscarTrabajador').val(dni).data('dni', dni); // Guardar DNI en data attribute
         $('#resultadosBusqueda').hide().empty();
         $('#spinnerBusqueda').hide();
-        console.log('✅ Trabajador seleccionado:', id, nombreCompleto);
+        console.log('✅ Trabajador seleccionado:', id, nombreCompleto, dni);
     },
     
     cargarPuestos: async function() {
@@ -865,6 +865,10 @@ const contrato = {
             
             const result = await response.json();
             
+            console.log('📦 Respuesta del servidor:', result);
+            console.log('🔍 Es edición:', esEdicion);
+            console.log('🔍 result.data:', result.data);
+            
             if (result.success) {
                 showNotification(esEdicion ? 'Contrato actualizado exitosamente' : 'Contrato guardado exitosamente', 'success');
                 
@@ -876,6 +880,35 @@ const contrato = {
                 
                 // Recargar tabla
                 this.tablaContratos.ajax.reload();
+                
+                // Si es un nuevo contrato, abrir modal de conceptos
+                if (!esEdicion) {
+                    console.log('✅ Es un nuevo contrato, preparando modal de conceptos...');
+                    
+                    // Obtener el ID del contrato (puede venir en diferentes formatos)
+                    const contratoId = result.data?.id || result.data?.imcontrato_id || result.data;
+                    const nroDocumento = $('#buscarTrabajador').data('dni') || '';
+                    const nombreCompleto = $('#nombreCompleto').val() || '';
+                    const regimenLaboralId = $('#regimenLaboral').val();
+                    const sueldoTotal = $('#sueldoTotal').val();
+                    
+                    console.log('📋 Datos para modal:', {
+                        contratoId,
+                        nroDocumento,
+                        nombreCompleto,
+                        regimenLaboralId,
+                        sueldoTotal
+                    });
+                    
+                    if (contratoId && regimenLaboralId) {
+                        // Esperar un momento para que se cierre el modal anterior
+                        setTimeout(() => {
+                            this.abrirModalConceptosAutomatico(contratoId, nroDocumento, nombreCompleto, regimenLaboralId, sueldoTotal);
+                        }, 500);
+                    } else {
+                        console.error('❌ Faltan datos para abrir el modal de conceptos');
+                    }
+                }
             } else {
                 showNotification('Error: ' + result.message, 'danger');
             }
@@ -990,8 +1023,336 @@ const contrato = {
         }
     },
     
-    modificarConceptos: function(id) {
-        showNotification('Funcionalidad de modificar conceptos en desarrollo', 'info');
+    modificarConceptos: async function(id) {
+        const self = this;
+        
+        try {
+            // Obtener datos del contrato
+            const response = await fetch(`/api/contratos/${id}`);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                const contrato = result.data;
+                
+                // Guardar el ID del contrato actual
+                self.contratoIdConceptos = id;
+                
+                // Llenar los datos del trabajador
+                $('#conceptoNroDocumento').val(contrato.nro_documento || '');
+                $('#conceptoTrabajador').val(contrato.apellidos_nombres || '');
+                
+                // Limpiar campos de búsqueda
+                $('#conceptoCodigo').val('');
+                $('#conceptoDescripcion').val('');
+                
+                // Limpiar la tabla
+                self.limpiarTablaConceptos();
+                
+                // Cargar conceptos del trabajador
+                self.cargarConceptosTrabajador(id);
+                
+                // Mostrar el modal
+                $('#modalConceptosTrabajador').modal('show');
+                
+                // Event listeners para el modal
+                self.inicializarEventosConceptos();
+            } else {
+                showNotification('No se pudo cargar la información del contrato', 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Error al cargar el contrato: ' + error.message, 'danger');
+        }
+    },
+    
+    inicializarEventosConceptos: function() {
+        const self = this;
+        
+        // Búsqueda de concepto por código
+        $(document).off('input', '#conceptoCodigo').on('input', '#conceptoCodigo', function() {
+            const codigo = $(this).val().trim();
+            if (codigo.length >= 2) {
+                self.buscarConcepto(codigo);
+            } else {
+                $('#conceptoDescripcion').val('');
+            }
+        });
+        
+        // Agregar concepto
+        $(document).off('click', '#btnAgregarConcepto').on('click', '#btnAgregarConcepto', function() {
+            self.agregarConceptoATabla();
+        });
+        
+        // Eliminar concepto de la tabla
+        $(document).off('click', '.btn-eliminar-concepto').on('click', '.btn-eliminar-concepto', function() {
+            $(this).closest('tr').remove();
+            self.actualizarNumeracionTabla();
+        });
+        
+        // Guardar conceptos
+        $(document).off('click', '#btnGuardarConceptos').on('click', '#btnGuardarConceptos', function() {
+            self.guardarConceptosTrabajador();
+        });
+    },
+    
+    buscarConcepto: function(codigo) {
+        // Por ahora, simulamos la búsqueda
+        // Aquí irá la llamada al API cuando esté lista
+        console.log('Buscando concepto:', codigo);
+        
+        // Simulación temporal
+        setTimeout(() => {
+            $('#conceptoDescripcion').val('Concepto encontrado - ' + codigo);
+        }, 300);
+    },
+    
+    agregarConceptoATabla: function() {
+        const codigo = $('#conceptoCodigo').val().trim();
+        const descripcion = $('#conceptoDescripcion').val().trim();
+        
+        if (!codigo || !descripcion) {
+            showNotification('Debe buscar y seleccionar un concepto válido', 'warning');
+            return;
+        }
+        
+        // Verificar si ya existe en la tabla
+        let existe = false;
+        $('#tablaConceptosTrabajadorBody tr').each(function() {
+            const codigoExistente = $(this).find('td:eq(1)').text();
+            if (codigoExistente === codigo) {
+                existe = true;
+                return false;
+            }
+        });
+        
+        if (existe) {
+            showNotification('Este concepto ya está en la lista', 'warning');
+            return;
+        }
+        
+        // Limpiar mensaje de "no hay datos"
+        if ($('#tablaConceptosTrabajadorBody tr td[colspan]').length > 0) {
+            $('#tablaConceptosTrabajadorBody').empty();
+        }
+        
+        // Agregar fila a la tabla
+        const numeroFila = $('#tablaConceptosTrabajadorBody tr').length + 1;
+        const nuevaFila = `
+            <tr>
+                <td class="text-center">${numeroFila}</td>
+                <td class="text-center">${codigo}</td>
+                <td>${descripcion}</td>
+                <td class="text-center">
+                    <select class="form-select form-select-sm tipo-concepto">
+                        <option value="VARIABLE">VARIABLE</option>
+                        <option value="FIJO">FIJO</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <input type="text" class="form-control form-control-sm tipo-valor" placeholder="MONTO o PORCENTAJE">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-concepto">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        
+        $('#tablaConceptosTrabajadorBody').append(nuevaFila);
+        
+        // Limpiar campos
+        $('#conceptoCodigo').val('');
+        $('#conceptoDescripcion').val('');
+        
+        // Re-inicializar event listener para el nuevo botón eliminar
+        this.inicializarEventosConceptos();
+        
+        showNotification('Concepto agregado a la lista', 'success');
+    },
+    
+    limpiarTablaConceptos: function() {
+        $('#tablaConceptosTrabajadorBody').html(`
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No hay conceptos asignados
+                </td>
+            </tr>
+        `);
+    },
+    
+    actualizarNumeracionTabla: function() {
+        $('#tablaConceptosTrabajadorBody tr').each(function(index) {
+            $(this).find('td:first').text(index + 1);
+        });
+        
+        // Si no quedan filas, mostrar mensaje
+        if ($('#tablaConceptosTrabajadorBody tr').length === 0) {
+            this.limpiarTablaConceptos();
+        }
+    },
+    
+    cargarConceptosTrabajador: function(contratoId) {
+        // Por ahora, dejamos la tabla vacía
+        // Aquí irá la llamada al API cuando esté lista
+        console.log('Cargando conceptos del contrato:', contratoId);
+    },
+    
+    guardarConceptosTrabajador: function() {
+        const self = this;
+        
+        // Recopilar datos de la tabla
+        const conceptos = [];
+        $('#tablaConceptosTrabajadorBody tr').each(function() {
+            if ($(this).find('td[colspan]').length === 0) {
+                const codigo = $(this).find('td:eq(1)').text();
+                const descripcion = $(this).find('td:eq(2)').text();
+                const tipo = $(this).find('.tipo-concepto').val();
+                const tipoValor = $(this).find('.tipo-valor').val();
+                
+                conceptos.push({
+                    codigo: codigo,
+                    descripcion: descripcion,
+                    tipo: tipo,
+                    tipoValor: tipoValor
+                });
+            }
+        });
+        
+        if (conceptos.length === 0) {
+            showNotification('No hay conceptos para guardar', 'warning');
+            return;
+        }
+        
+        console.log('Guardando conceptos:', {
+            contratoId: self.contratoIdConceptos,
+            conceptos: conceptos
+        });
+        
+        // Por ahora solo mostramos mensaje
+        // Aquí irá la llamada al API cuando esté lista
+        showNotification('Conceptos guardados exitosamente (simulado)', 'success');
+        $('#modalConceptosTrabajador').modal('hide');
+    },
+    
+    // Abrir modal de conceptos automáticamente después de crear contrato
+    abrirModalConceptosAutomatico: async function(contratoId, nroDocumento, nombreCompleto, regimenLaboralId, sueldoTotal) {
+        const self = this;
+        
+        try {
+            // Guardar el ID del contrato actual
+            self.contratoIdConceptos = contratoId;
+            
+            // Llenar los datos del trabajador
+            $('#conceptoNroDocumento').val(nroDocumento);
+            $('#conceptoTrabajador').val(nombreCompleto);
+            
+            // Limpiar campos de búsqueda
+            $('#conceptoCodigo').val('');
+            $('#conceptoDescripcion').val('');
+            
+            // Limpiar la tabla
+            self.limpiarTablaConceptos();
+            
+            // Cargar conceptos del régimen laboral
+            await self.cargarConceptosDesdeRegimen(regimenLaboralId, sueldoTotal);
+            
+            // Mostrar el modal
+            $('#modalConceptosTrabajador').modal('show');
+            
+            // Event listeners para el modal
+            self.inicializarEventosConceptos();
+            
+        } catch (error) {
+            console.error('Error al abrir modal de conceptos:', error);
+            showNotification('Error al cargar conceptos: ' + error.message, 'danger');
+        }
+    },
+    
+    // Cargar conceptos desde el régimen laboral
+    cargarConceptosDesdeRegimen: async function(regimenLaboralId, sueldoTotal) {
+        const self = this;
+        
+        try {
+            // Obtener conceptos del régimen laboral desde la tabla rrhh_concepto_regimen_detalle
+            const response = await fetch(`/api/conceptos-regimen-laboral/${regimenLaboralId}/conceptos`);
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.length > 0) {
+                const tbody = $('#tablaConceptosTrabajadorBody');
+                tbody.empty();
+                
+                result.data.forEach((concepto, index) => {
+                    // Determinar tipo y tipo valor según el concepto
+                    let tipo = 'VARIABLE';
+                    let tipoValor = '';
+                    let valor = '0';
+                    
+                    const descripcion = concepto.descripcion || concepto.tributoDescripcion || '';
+                    const descripcionUpper = descripcion.toUpperCase();
+                    
+                    // Lógica para determinar tipo y valores según la descripción
+                    if (descripcionUpper.includes('REMUNERACIÓN') && (descripcionUpper.includes('BÁSICA') || descripcionUpper.includes('VACACIONAL'))) {
+                        tipo = 'FIJO';
+                        tipoValor = 'MONTO';
+                        valor = sueldoTotal || '0';
+                    } else if (descripcionUpper.includes('ESSALUD')) {
+                        tipo = 'FIJO';
+                        tipoValor = 'PORCENTAJE';
+                        valor = '9';
+                    } else if (descripcionUpper.includes('BONIFICACIÓN') && descripcionUpper.includes('9%')) {
+                        tipo = 'FIJO';
+                        tipoValor = 'PORCENTAJE';
+                        valor = '9';
+                    } else if (descripcionUpper.includes('AFP') || descripcionUpper.includes('ONP')) {
+                        tipo = 'FIJO';
+                        tipoValor = 'PORCENTAJE';
+                        valor = '0';
+                    }
+                    
+                    const codigoMostrar = concepto.tributoCodigoSunat || concepto.codigo || (index + 1);
+                    
+                    const nuevaFila = `
+                        <tr>
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-center">${codigoMostrar}</td>
+                            <td>${descripcion}</td>
+                            <td class="text-center">
+                                <select class="form-select form-select-sm tipo-concepto">
+                                    <option value="VARIABLE" ${tipo === 'VARIABLE' ? 'selected' : ''}>VARIABLE</option>
+                                    <option value="FIJO" ${tipo === 'FIJO' ? 'selected' : ''}>FIJO</option>
+                                </select>
+                            </td>
+                            <td class="text-center">
+                                <input type="text" class="form-control form-control-sm tipo-valor" 
+                                       placeholder="${tipoValor || 'MONTO o PORCENTAJE'}" 
+                                       value="${tipoValor}">
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-concepto">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    
+                    tbody.append(nuevaFila);
+                });
+                
+                // Re-inicializar event listeners
+                self.inicializarEventosConceptos();
+                
+                console.log(`✅ Cargados ${result.data.length} conceptos del régimen laboral`);
+            } else {
+                console.log('⚠️ No se encontraron conceptos para este régimen laboral');
+                self.limpiarTablaConceptos();
+            }
+            
+        } catch (error) {
+            console.error('Error al cargar conceptos del régimen:', error);
+            showNotification('Error al cargar conceptos del régimen laboral', 'danger');
+            self.limpiarTablaConceptos();
+        }
     },
     
     finalizarContrato: function(id) {

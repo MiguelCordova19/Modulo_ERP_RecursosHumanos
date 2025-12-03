@@ -3,6 +3,8 @@ const conceptoRegimenLaboral = {
     table: null,
     conceptosAgregados: [],
     conceptoSeleccionado: null,
+    paginaActual: 1,
+    registrosPorPagina: 8,
 
     // Inicializar el módulo
     init: function() {
@@ -45,6 +47,32 @@ const conceptoRegimenLaboral = {
             e.preventDefault();
             const index = $(this).data('index');
             self.eliminarConcepto(index);
+        });
+        
+        // Botones de paginación
+        $(document).off('click', '#btnAnterior a').on('click', '#btnAnterior a', function(e) {
+            e.preventDefault();
+            if (self.paginaActual > 1) {
+                self.paginaActual--;
+                self.actualizarTablaConceptos();
+            }
+        });
+        
+        $(document).off('click', '#btnSiguiente a').on('click', '#btnSiguiente a', function(e) {
+            e.preventDefault();
+            const totalPaginas = Math.ceil(self.conceptosAgregados.length / self.registrosPorPagina);
+            if (self.paginaActual < totalPaginas) {
+                self.paginaActual++;
+                self.actualizarTablaConceptos();
+            }
+        });
+        
+        // Click en números de página (delegado)
+        $(document).off('click', '.page-numero').on('click', '.page-numero', function(e) {
+            e.preventDefault();
+            const pagina = $(this).data('pagina');
+            self.paginaActual = pagina;
+            self.actualizarTablaConceptos();
         });
         
         // Limpiar al cerrar modal
@@ -195,20 +223,34 @@ const conceptoRegimenLaboral = {
                 </tr>
             `);
             $('#infoRegistros').text('Mostrando 0 a 0 de 0 registros');
+            $('#btnAnterior').addClass('disabled');
+            $('#btnSiguiente').addClass('disabled');
+            // Limpiar números de página
+            $('#paginacionConceptos').find('.page-numero').parent().remove();
             return;
         }
         
-        this.conceptosAgregados.forEach((concepto, index) => {
+        // Calcular paginación
+        const totalRegistros = this.conceptosAgregados.length;
+        const totalPaginas = Math.ceil(totalRegistros / this.registrosPorPagina);
+        const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
+        const fin = Math.min(inicio + this.registrosPorPagina, totalRegistros);
+        
+        // Obtener registros de la página actual
+        const conceptosPagina = this.conceptosAgregados.slice(inicio, fin);
+        
+        conceptosPagina.forEach((concepto, indexPagina) => {
+            const indexReal = inicio + indexPagina;
             // Mostrar el código SUNAT del tributo en lugar del ID del concepto
             const codigoMostrar = concepto.tributoCodigoSunat || concepto.id;
             
             const row = $(`
                 <tr>
-                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center">${indexReal + 1}</td>
                     <td>${codigoMostrar}</td>
                     <td>${concepto.descripcion || 'Sin descripción'}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-danger btn-eliminar-concepto" data-index="${index}">
+                        <button class="btn btn-sm btn-danger btn-eliminar-concepto" data-index="${indexReal}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -217,12 +259,65 @@ const conceptoRegimenLaboral = {
             tbody.append(row);
         });
         
-        $('#infoRegistros').text(`Mostrando 1 a ${this.conceptosAgregados.length} de ${this.conceptosAgregados.length} registros`);
+        // Actualizar información de registros
+        $('#infoRegistros').text(`Mostrando ${inicio + 1} a ${fin} de ${totalRegistros} registros`);
+        
+        // Generar números de página
+        this.generarPaginacion(totalPaginas);
+    },
+    
+    // Generar botones de paginación
+    generarPaginacion: function(totalPaginas) {
+        const paginacion = $('#paginacionConceptos');
+        
+        // Limpiar números de página anteriores
+        paginacion.find('.page-numero').parent().remove();
+        
+        // Habilitar/deshabilitar botón Anterior
+        if (this.paginaActual === 1) {
+            $('#btnAnterior').addClass('disabled');
+        } else {
+            $('#btnAnterior').removeClass('disabled');
+        }
+        
+        // Generar números de página
+        const maxBotones = 5; // Máximo de botones numéricos a mostrar
+        let inicio = Math.max(1, this.paginaActual - Math.floor(maxBotones / 2));
+        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+        
+        // Ajustar inicio si estamos cerca del final
+        if (fin - inicio < maxBotones - 1) {
+            inicio = Math.max(1, fin - maxBotones + 1);
+        }
+        
+        for (let i = inicio; i <= fin; i++) {
+            const activeClass = i === this.paginaActual ? 'active' : '';
+            const pageItem = $(`
+                <li class="page-item ${activeClass}">
+                    <a class="page-link page-numero" href="#" data-pagina="${i}">${i}</a>
+                </li>
+            `);
+            pageItem.insertBefore($('#btnSiguiente'));
+        }
+        
+        // Habilitar/deshabilitar botón Siguiente
+        if (this.paginaActual >= totalPaginas) {
+            $('#btnSiguiente').addClass('disabled');
+        } else {
+            $('#btnSiguiente').removeClass('disabled');
+        }
     },
 
     // Eliminar concepto de la lista
     eliminarConcepto: function(index) {
         this.conceptosAgregados.splice(index, 1);
+        
+        // Ajustar página actual si es necesario
+        const totalPaginas = Math.ceil(this.conceptosAgregados.length / this.registrosPorPagina);
+        if (this.paginaActual > totalPaginas && totalPaginas > 0) {
+            this.paginaActual = totalPaginas;
+        }
+        
         this.actualizarTablaConceptos();
         showNotification('Concepto eliminado', 'info');
     },
@@ -237,6 +332,7 @@ const conceptoRegimenLaboral = {
         $('#conceptoRegimenLaboral').prop('disabled', false); // Habilitar select
         this.conceptosAgregados = [];
         this.conceptoSeleccionado = null;
+        this.paginaActual = 1; // Resetear paginación
         this.actualizarTablaConceptos();
     },
 
@@ -442,15 +538,22 @@ const conceptoRegimenLaboral = {
             responsive: true,
             dom: 'lftip',
             order: [[0, 'desc']],
+            orderCellsTop: true,
+            fixedHeader: true,
             initComplete: function() {
-                // Agregar filtros en cada columna
-                this.api().columns([0, 1, 2, 3]).every(function() {
+                const api = this.api();
+                
+                // Crear una segunda fila de encabezados para los filtros
+                $('#tablaConceptosRegimen thead tr').clone(true).addClass('filters').appendTo('#tablaConceptosRegimen thead');
+                
+                // Agregar filtros en la segunda fila
+                api.columns([0, 1, 2, 3]).every(function(index) {
                     const column = this;
                     const title = $(column.header()).text();
                     
-                    // Crear input de búsqueda
-                    const input = $(`<input type="text" placeholder="Filtrar '${title}'" />`)
-                        .appendTo($(column.header()))
+                    // Crear input de búsqueda en la segunda fila
+                    const input = $(`<input type="text" class="form-control form-control-sm" placeholder="Filtrar ${title}" style="width: 100%;" />`)
+                        .appendTo($('#tablaConceptosRegimen thead tr.filters th').eq(index).empty())
                         .on('click', function(e) {
                             e.stopPropagation();
                         })
@@ -461,7 +564,10 @@ const conceptoRegimenLaboral = {
                         });
                 });
                 
-                console.log('✅ DataTable inicializada con filtros');
+                // Limpiar la celda de acciones en la fila de filtros
+                $('#tablaConceptosRegimen thead tr.filters th').eq(4).empty();
+                
+                console.log('✅ DataTable inicializada con filtros en fila separada');
             }
         });
     },

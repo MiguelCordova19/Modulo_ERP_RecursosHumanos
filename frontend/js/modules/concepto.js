@@ -51,10 +51,20 @@ const concepto = {
                 },
                 {
                     data: 'tributoCodigoSunat',
-                    className: 'text-center',
-                    width: '120px',
+                    width: '250px',
                     render: function(data, type, row) {
-                        return data || '-';
+                        const codigo = data || '-';
+                        const descripcion = row.tributoDescripcion || '';
+                        
+                        if (descripcion) {
+                            return `
+                                <div>
+                                    <span class="badge bg-primary me-2">${codigo}</span>
+                                    <span class="text-muted" style="font-size: 0.9em;">${descripcion}</span>
+                                </div>
+                            `;
+                        }
+                        return codigo;
                     }
                 },
                 {
@@ -117,15 +127,22 @@ const concepto = {
             responsive: true,
             dom: 'lftip',
             order: [[0, 'asc']],
+            orderCellsTop: true,
+            fixedHeader: true,
             initComplete: function() {
-                // Agregar filtros en cada columna
-                this.api().columns([0, 1, 2, 3, 4]).every(function() {
+                const api = this.api();
+                
+                // Crear una segunda fila de encabezados para los filtros
+                $('#tablaConceptos thead tr').clone(true).addClass('filters').appendTo('#tablaConceptos thead');
+                
+                // Agregar filtros en la segunda fila
+                api.columns([0, 1, 2, 3, 4]).every(function(index) {
                     const column = this;
                     const title = $(column.header()).text();
                     
-                    // Crear input de búsqueda
-                    const input = $(`<input type="text" placeholder="Filtrar '${title}'" />`)
-                        .appendTo($(column.header()))
+                    // Crear input de búsqueda en la segunda fila
+                    const input = $(`<input type="text" class="form-control form-control-sm" placeholder="Filtrar ${title}" style="width: 100%;" />`)
+                        .appendTo($('#tablaConceptos thead tr.filters th').eq(index).empty())
                         .on('click', function(e) {
                             e.stopPropagation();
                         })
@@ -136,7 +153,10 @@ const concepto = {
                         });
                 });
                 
-                console.log('✅ DataTable inicializada con filtros');
+                // Limpiar la celda de acciones en la fila de filtros
+                $('#tablaConceptos thead tr.filters th').eq(5).empty();
+                
+                console.log('✅ DataTable inicializada con filtros en fila separada');
             }
         });
     },
@@ -176,6 +196,9 @@ const concepto = {
         
         // Evento para habilitar/deshabilitar campo Tipo según Afecto
         this.configurarAfectoTipo();
+        
+        // Evento para habilitar/deshabilitar tributo según Tipo Concepto
+        this.configurarTipoConcepto();
     },
     
     // Configurar lógica de Afecto -> Tipo
@@ -204,6 +227,27 @@ const concepto = {
                 $('#tipoAyuda').text('No requerido cuando Afecto es "No"');
                 
                 console.log('⚠️ Campo Tipo deshabilitado (Afecto: No)');
+            }
+        });
+    },
+    
+    // Configurar lógica de Tipo Concepto -> Tributo
+    configurarTipoConcepto: function() {
+        $('#conceptoTipoConcepto').on('change', function() {
+            const tipoConceptoId = $(this).val();
+            const tipoConceptoTexto = $(this).find('option:selected').text().toUpperCase();
+            const esTipoTotales = tipoConceptoTexto.includes('TOTALES') || tipoConceptoId === '03';
+            
+            if (esTipoTotales) {
+                // Si es TOTALES, el tributo no es obligatorio
+                $('#conceptoNombreTributo').prop('required', false);
+                $('#conceptoNombreTributo').attr('placeholder', 'Opcional para tipo TOTALES');
+                console.log('ℹ️ Tributo no obligatorio (Tipo: TOTALES)');
+            } else {
+                // Para otros tipos, el tributo es obligatorio
+                $('#conceptoNombreTributo').prop('required', true);
+                $('#conceptoNombreTributo').attr('placeholder', 'Buscar por código o nombre del tributo...');
+                console.log('✅ Tributo obligatorio');
             }
         });
     },
@@ -394,20 +438,23 @@ const concepto = {
             const id = $('#conceptoId').val();
             const tributoId = $('#conceptoTributoId').val();
             const tipoConceptoId = $('#conceptoTipoConcepto').val();
+            const tipoConceptoTexto = $('#conceptoTipoConcepto option:selected').text().toUpperCase();
             const descripcion = $('#conceptoDescripcion').val().trim();
             const afectoRadio = $('input[name="conceptoAfecto"]:checked').val();
             const tipoTotalesId = $('#conceptoTipo').val();
             
             // Validaciones
-            if (!tributoId) {
-                showNotification('Por favor seleccione un tributo válido', 'warning');
-                $('#conceptoNombreTributo').focus();
-                return;
-            }
-            
             if (!tipoConceptoId) {
                 showNotification('Por favor seleccione un tipo de concepto', 'warning');
                 $('#conceptoTipoConcepto').focus();
+                return;
+            }
+            
+            // Solo validar tributo si NO es tipo TOTALES
+            const esTipoTotales = tipoConceptoTexto.includes('TOTALES') || tipoConceptoId === '03';
+            if (!esTipoTotales && !tributoId) {
+                showNotification('Por favor seleccione un tributo válido', 'warning');
+                $('#conceptoNombreTributo').focus();
                 return;
             }
             

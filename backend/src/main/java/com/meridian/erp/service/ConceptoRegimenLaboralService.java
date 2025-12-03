@@ -94,6 +94,34 @@ public class ConceptoRegimenLaboralService {
     }
     
     /**
+     * Obtener conceptos asignados a un régimen laboral específico
+     * Este método se usa para cargar los conceptos en el modal de contrato
+     */
+    public List<Map<String, Object>> obtenerConceptosPorRegimen(String regimenLaboralId) {
+        String sql = """
+            SELECT 
+                crd.imconceptosregimendetalle_id as id,
+                crd.ic_concepto_id as concepto_id,
+                c.tc_descripcion as descripcion,
+                t.tt_codsunat as tributo_codigo_sunat,
+                t.tt_descripcion as tributo_descripcion,
+                tc.ttc_descripcion as tipo_concepto_descripcion,
+                c.ic_afecto as afecto
+            FROM rrhh_conceptos_regimen_laboral cr
+            INNER JOIN rrhh_conceptos_regimen_detalle crd ON cr.imconceptosregimen_id = crd.ic_conceptosregimen_id
+            INNER JOIN rrhh_mconceptos c ON crd.ic_concepto_id = c.imconceptos_id
+            LEFT JOIN rrhh_mtributos t ON c.ic_tributos = t.imtributos_id
+            LEFT JOIN rrhh_mtipoconcepto tc ON c.ic_tipoconcepto = tc.imtipoconcepto
+            WHERE cr.ic_regimenlaboral = ? 
+                AND cr.ic_estado = 1 
+                AND crd.ic_estado = 1
+            ORDER BY crd.imconceptosregimendetalle_id
+        """;
+        
+        return jdbcTemplate.queryForList(sql, regimenLaboralId);
+    }
+    
+    /**
      * Guardar o actualizar conceptos por régimen laboral
      */
     @Transactional
