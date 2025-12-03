@@ -1,0 +1,251 @@
+<!-- Módulo de Asistencia -->
+<style>
+    .filtros-asistencia {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .tabla-asistencia {
+        font-size: 13px;
+    }
+    
+    .tabla-asistencia th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px 5px;
+    }
+    
+    .tabla-asistencia td {
+        text-align: center;
+        vertical-align: middle;
+        padding: 8px 5px;
+    }
+    
+    /* Modal más ancho para asistencia */
+    .modal-asistencia-wide {
+        max-width: 95%;
+        width: 95%;
+    }
+    
+    @media (min-width: 1400px) {
+        .modal-asistencia-wide {
+            max-width: 1400px;
+        }
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-calendar-check me-2 text-primary"></i>
+        ASISTENCIA
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-primary btn-nuevo-asistencia">
+            <i class="fas fa-plus me-1"></i>
+            Nuevo
+        </button>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body filtros-asistencia">
+        <div class="row g-3 align-items-end">
+            <!-- Fecha Desde -->
+            <div class="col-md-2">
+                <label class="form-label form-label-sm mb-1">Fecha Desde</label>
+                <input type="date" class="form-control form-control-sm" id="filtroFechaDesde">
+            </div>
+            
+            <!-- Fecha Hasta -->
+            <div class="col-md-2">
+                <label class="form-label form-label-sm mb-1">Fecha Hasta</label>
+                <input type="date" class="form-control form-control-sm" id="filtroFechaHasta">
+            </div>
+            
+            <!-- Sede -->
+            <div class="col-md-3">
+                <label class="form-label form-label-sm mb-1">Sede</label>
+                <select class="form-select form-select-sm" id="filtroSede">
+                    <option value="">* TODOS *</option>
+                </select>
+            </div>
+            
+            <!-- Turno -->
+            <div class="col-md-3">
+                <label class="form-label form-label-sm mb-1">Turno</label>
+                <select class="form-select form-select-sm" id="filtroTurno">
+                    <option value="">* TODOS *</option>
+                </select>
+            </div>
+            
+            <!-- Botón Consultar -->
+            <div class="col-md-2">
+                <button type="button" class="btn btn-primary btn-sm w-100 btn-consultar-asistencia">
+                    <i class="fas fa-search me-1"></i>
+                    Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Asistencia -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaAsistencia" class="table table-striped table-bordered table-hover tabla-asistencia" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">Fecha</th>
+                        <th style="width: 100px;">Día</th>
+                        <th style="width: 100px;">Turno</th>
+                        <th style="width: 150px;">Sede</th>
+                        <th style="width: 120px;">Asistieron</th>
+                        <th style="width: 120px;">Faltaron</th>
+                        <th style="width: 120px;">Día de Descanso</th>
+                        <th style="width: 120px;">C. Día de Descanso</th>
+                        <th style="width: 100px;">Día Feriado</th>
+                        <th style="width: 120px;">Trab. Día Feriado</th>
+                        <th style="width: 80px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación personalizada -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <span class="text-muted">Mostrar</span>
+                <select class="form-select form-select-sm d-inline-block" style="width: auto;" id="registrosPorPagina">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span class="text-muted">registros</span>
+                <span class="ms-3 text-muted" id="infoRegistros">Mostrando 0 a 0 de 0 registros</span>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-secondary me-1" id="btnAnterior">Anterior</button>
+                <button class="btn btn-sm btn-outline-secondary" id="btnSiguiente">Siguiente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nueva Asistencia -->
+<div class="modal fade" id="modalAsistencia" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-asistencia-wide modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold" id="modalAsistenciaTitle">
+                    Nueva Asistencia
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                <!-- Filtros superiores -->
+                <div class="row g-2 mb-3 align-items-end">
+                    <!-- Fecha -->
+                    <div class="col-md-2">
+                        <label class="form-label form-label-sm mb-1">Fecha</label>
+                        <input type="date" class="form-control form-control-sm" id="modalFecha">
+                    </div>
+                    
+                    <!-- Día -->
+                    <div class="col-md-2">
+                        <label class="form-label form-label-sm mb-1">Día</label>
+                        <input type="text" class="form-control form-control-sm" id="modalDia" readonly style="background-color: #f8f9fa;">
+                    </div>
+                    
+                    <!-- Sede -->
+                    <div class="col-md-2">
+                        <label class="form-label form-label-sm mb-1">Sede</label>
+                        <select class="form-select form-select-sm" id="modalSede">
+                            <option value="">* Seleccione *</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Turno -->
+                    <div class="col-md-2">
+                        <label class="form-label form-label-sm mb-1">Turno</label>
+                        <select class="form-select form-select-sm" id="modalTurno">
+                            <option value="">* Seleccione *</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Botón Consultar -->
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary btn-sm w-100 btn-consultar-trabajadores">
+                            <i class="fas fa-search me-1"></i>
+                            Consultar
+                        </button>
+                    </div>
+                    
+                    <!-- Registrados Por -->
+                    <div class="col-md-2">
+                        <label class="form-label form-label-sm mb-1">Registrados Por</label>
+                        <input type="text" class="form-control form-control-sm" id="modalRegistradoPor" readonly style="background-color: #f8f9fa;">
+                    </div>
+                </div>
+                
+                <!-- Tabla de trabajadores -->
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-bordered table-hover table-sm" style="font-size: 12px;">
+                        <thead style="position: sticky; top: 0; background-color: #e9ecef; z-index: 1;">
+                            <tr>
+                                <th style="width: 40px; text-align: center; vertical-align: middle;">#</th>
+                                <th style="width: 120px; text-align: center; vertical-align: middle;">Nro. Documento</th>
+                                <th style="min-width: 250px; vertical-align: middle;">Apellidos y Nombres</th>
+                                <th style="width: 110px; text-align: center; vertical-align: middle;">Fecha Inicio</th>
+                                <th style="width: 100px; text-align: center; vertical-align: middle;">Día Descanso</th>
+                                <th style="width: 120px; text-align: center; vertical-align: middle;">Compró Día Descanso</th>
+                                <th style="width: 100px; text-align: center; vertical-align: middle;">Día Feriado</th>
+                                <th style="width: 120px; text-align: center; vertical-align: middle;">Día Feriado Trabajó?</th>
+                                <th style="width: 80px; text-align: center; vertical-align: middle;">Faltó?</th>
+                                <th style="width: 110px; text-align: center; vertical-align: middle;">Hora Entrada</th>
+                                <th style="width: 110px; text-align: center; vertical-align: middle;">Hora Ingreso</th>
+                                <th style="width: 110px; text-align: center; vertical-align: middle;">Hora Tardanza</th>
+                                <th style="width: 180px; text-align: center; vertical-align: middle;">Observación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaTrabajadoresAsistencia">
+                            <tr>
+                                <td colspan="13" class="text-center text-muted py-4">
+                                    No hay datos disponibles
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Información de registros -->
+                <div class="mt-2">
+                    <small class="text-muted">Mostrando 0 a 0 de 0 registros</small>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-guardar-asistencia-trabajadores" style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-save me-1"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script del módulo -->
+<script src="/js/modules/asistencia.js"></script>

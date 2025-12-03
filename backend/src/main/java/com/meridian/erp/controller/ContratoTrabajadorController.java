@@ -254,4 +254,27 @@ public class ContratoTrabajadorController {
                     .body(ApiResponse.error("Error al obtener contratos: " + e.getMessage()));
         }
     }
+    
+    /**
+     * GET /api/contratos/trabajadores-activos
+     * Listar trabajadores activos por sede, turno y fecha para asistencia
+     * Parámetros: empresaId, sedeId, turnoId, fecha
+     */
+    @GetMapping("/trabajadores-activos")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> listarTrabajadoresActivos(
+            @RequestParam Integer empresaId,
+            @RequestParam Long sedeId,
+            @RequestParam String turnoId,
+            @RequestParam String fecha) {
+        try {
+            LocalDate fechaConsulta = LocalDate.parse(fecha);
+            List<Map<String, Object>> trabajadores = contratoTrabajadorService.listarTrabajadoresActivosPorSedeTurno(
+                    empresaId, sedeId, turnoId, fechaConsulta);
+            return ResponseEntity.ok(ApiResponse.success("Trabajadores obtenidos exitosamente", trabajadores));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al obtener trabajadores: " + e.getMessage()));
+        }
+    }
 }

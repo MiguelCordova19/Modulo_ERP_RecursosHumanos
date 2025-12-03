@@ -1,0 +1,257 @@
+<!-- Módulo de Jornada Laboral -->
+<style>
+    .tabla-jornada-laboral {
+        font-size: 13px;
+    }
+    
+    .tabla-jornada-laboral th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+    
+    .tabla-jornada-laboral td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+    
+    .btn-accion-jornada {
+        padding: 4px 8px;
+        margin: 0 2px;
+    }
+    
+    .filtros-jornada-laboral {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-calendar-check me-2 text-primary"></i>
+        JORNADA LABORAL
+    </h1>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body filtros-jornada-laboral">
+        <div class="row g-3 align-items-end">
+            <!-- Sede -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Sede</label>
+                <select class="form-select" id="filtroSedeJornada">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+            
+            <!-- Año -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Año</label>
+                <select class="form-select" id="filtroAnioJornada">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            
+            <!-- Mes -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Mes</label>
+                <select class="form-select" id="filtroMesJornada">
+                    <option value="">Todos</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            
+            <!-- Botón Consultar -->
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary w-100" id="btnConsultarJornada" 
+                        style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-search me-1"></i>
+                    Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Nuevo -->
+<div class="mb-3 text-end">
+    <button type="button" class="btn btn-primary" id="btnNuevaJornada" 
+            style="background-color: #ff6600; border-color: #ff6600;">
+        <i class="fas fa-plus me-2"></i>
+        Nuevo
+    </button>
+</div>
+
+<!-- Tabla de Jornada Laboral -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaJornadaLaboral" class="table table-striped table-bordered table-hover tabla-jornada-laboral" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="min-width: 150px;">Sede</th>
+                        <th style="width: 120px;">Fecha Desde</th>
+                        <th style="width: 120px;">Fecha Hasta</th>
+                        <th style="min-width: 200px;">Registrado Por</th>
+                        <th style="width: 150px;">Fecha Registro</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables llenará esto automáticamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nueva/Editar Jornada Laboral -->
+<div class="modal fade" id="modalJornadaLaboral" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl" style="max-width: 95%;">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">
+                    <span id="tituloModalJornada">Nueva Jornada Laboral</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formJornadaLaboral">
+                    <!-- Filtros superiores -->
+                    <div class="row g-3 mb-3">
+                        <!-- Sede -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Sede</label>
+                            <select class="form-select" id="modalSedeJornada">
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Fecha Desde -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Fecha Desde</label>
+                            <input type="date" class="form-control" id="modalFechaDesdeJornada" 
+                                   placeholder="DD/MM/YYYY">
+                        </div>
+                        
+                        <!-- Fecha Hasta -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Fecha Hasta</label>
+                            <input type="date" class="form-control" id="modalFechaHastaJornada" 
+                                   placeholder="DD/MM/YYYY">
+                        </div>
+                    </div>
+                    
+                    <!-- Botón Consultar -->
+                    <div class="row mb-3">
+                        <div class="col-md-12 text-end">
+                            <button type="button" class="btn btn-primary" id="btnConsultarModalJornada"
+                                    style="background-color: #ff6600; border-color: #ff6600;">
+                                <i class="fas fa-search me-2"></i>
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabla de Jornada Laboral -->
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-bordered table-sm table-hover">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th style="width: 40px;" class="text-center">#</th>
+                                    <th style="width: 80px;" class="text-center">F. Ingreso</th>
+                                    <th style="min-width: 200px;">Apellidos y Nombres</th>
+                                    <th style="width: 80px;" class="text-center">Turno</th>
+                                    <th style="width: 70px;" class="text-center">Hora Lab.</th>
+                                    <th style="width: 70px;" class="text-center">Día Lab.</th>
+                                    <th style="width: 70px;" class="text-center">D. No Lab.</th>
+                                    <th style="width: 70px;" class="text-center">Día Sub.</th>
+                                    <th style="width: 70px;" class="text-center">D. No Sub.</th>
+                                    <th style="width: 70px;" class="text-center">Día Desc.</th>
+                                    <th style="width: 70px;" class="text-center">C. D. Desc.</th>
+                                    <th style="width: 70px;" class="text-center">Día Vac.</th>
+                                    <th style="width: 70px;" class="text-center">Día Fer.</th>
+                                    <th style="width: 70px;" class="text-center">D. T. Fer.</th>
+                                    <th style="width: 70px;" class="text-center">Hora Trab.</th>
+                                    <th style="width: 80px;" class="text-center">Tard. en min.</th>
+                                    <th style="width: 70px;" class="text-center">Día Total</th>
+                                    <th style="width: 80px;" class="text-center">Días a Validar</th>
+                                    <th style="width: 70px;" class="text-center">Validado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyJornadaLaboral">
+                                <tr>
+                                    <td colspan="19" class="text-center text-muted">
+                                        No hay datos disponibles
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <div class="row align-items-center mt-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">Mostrar</span>
+                                <select class="form-select form-select-sm" style="width: 80px;" id="registrosPorPaginaJornada">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="ms-2">registros</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span id="infoRegistrosJornada">Mostrando 0 a 0 de 0 registros</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-12 text-center">
+                            <button type="button" class="btn btn-outline-secondary me-2" id="btnAnteriorJornada">
+                                Anterior
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnSiguienteJornada">
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-lg px-5" id="btnGuardarJornada" 
+                        style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script del módulo -->
+<script src="/js/modules/jornada-laboral.js"></script>

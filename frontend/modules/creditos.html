@@ -1,0 +1,221 @@
+<!-- Módulo de Créditos -->
+<style>
+    .tabla-creditos {
+        font-size: 13px;
+    }
+    
+    .tabla-creditos th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+    
+    .tabla-creditos td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+    
+    .btn-accion-creditos {
+        padding: 4px 8px;
+        margin: 0 2px;
+    }
+    
+    .filtros-creditos {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-credit-card me-2 text-primary"></i>
+        CRÉDITOS
+    </h1>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body filtros-creditos">
+        <div class="row g-3 align-items-end">
+            <!-- Período -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Período</label>
+                <input type="month" class="form-control" id="filtroPeriodoCreditos">
+            </div>
+            
+            <!-- Sede -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Sede</label>
+                <select class="form-select" id="filtroSedeCreditos">
+                    <option value="">* TODOS *</option>
+                </select>
+            </div>
+            
+            <!-- Botón Consultar -->
+            <div class="col-md-4">
+                <button type="button" class="btn btn-primary btn-sm" id="btnConsultarCreditos" 
+                        style="background-color: #6c757d; border-color: #6c757d;">
+                    <i class="fas fa-search me-1"></i>
+                    Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Nuevo -->
+<div class="mb-3 text-end">
+    <button type="button" class="btn btn-primary" id="btnNuevoCredito" 
+            style="background-color: #ff6600; border-color: #ff6600;">
+        <i class="fas fa-plus me-2"></i>
+        Nuevo
+    </button>
+</div>
+
+<!-- Tabla de Créditos -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaCreditos" class="table table-striped table-bordered table-hover tabla-creditos" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 100px;">Nro Doc</th>
+                        <th style="min-width: 200px;">Apellidos y Nombres</th>
+                        <th style="min-width: 180px;">Concepto</th>
+                        <th style="min-width: 150px;">Puesto</th>
+                        <th style="min-width: 150px;">Sede</th>
+                        <th style="min-width: 150px;">Línea Crédito</th>
+                        <th style="width: 120px;">Consumo Total</th>
+                        <th style="width: 100px;">Saldo</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables llenará esto automáticamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nuevo/Editar Crédito -->
+<div class="modal fade" id="modalCredito" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-center w-100">
+                    <span id="tituloModalCredito">Nuevo Crédito</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formCredito">
+                    <div class="row g-3 mb-3">
+                        <!-- Fecha -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha</label>
+                            <input type="date" class="form-control" id="modalFechaCredito">
+                        </div>
+                        
+                        <!-- Período -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Período</label>
+                            <input type="month" class="form-control" id="modalPeriodoCredito">
+                        </div>
+                    </div>
+                    
+                    <!-- Créditos (Archivo) -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-9">
+                            <label class="form-label fw-semibold">Créditos</label>
+                            <input type="file" class="form-control" id="archivoCreditos" accept=".xlsx,.xls,.csv">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" id="btnCargarArchivo"
+                                    style="background-color: #ff6600; border-color: #ff6600;">
+                                <i class="fas fa-upload me-2"></i>
+                                Cargar datos
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabla de Créditos -->
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;" class="text-center">#</th>
+                                    <th style="width: 120px;" class="text-center">Nro Doc</th>
+                                    <th class="text-center">Apellidos y Nombres</th>
+                                    <th style="width: 150px;" class="text-center">Puesto</th>
+                                    <th style="width: 150px;" class="text-center">Sede</th>
+                                    <th style="width: 150px;" class="text-center">Línea Crédito</th>
+                                    <th style="width: 120px;" class="text-center">Consumo Total</th>
+                                    <th style="width: 120px;" class="text-center">Saldo</th>
+                                    <th style="width: 60px;" class="text-center"><i class="fas fa-cog"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyDetalleCreditos">
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">
+                                        No hay datos disponibles
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">Mostrar</span>
+                                <select class="form-select form-select-sm" style="width: 80px;" id="registrosPorPaginaCreditos">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="ms-2">registros</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span id="infoRegistrosCreditos">Mostrando 0 a 0 de 0 registros</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-12 text-center">
+                            <button type="button" class="btn btn-outline-secondary me-2" id="btnAnteriorCreditos">
+                                Anterior
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnSiguienteCreditos">
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-lg px-5" id="btnGuardarCredito" 
+                        style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script del módulo -->
+<script src="/js/modules/creditos.js"></script>

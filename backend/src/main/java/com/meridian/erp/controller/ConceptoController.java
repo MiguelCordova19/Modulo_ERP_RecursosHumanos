@@ -1,7 +1,6 @@
 package com.meridian.erp.controller;
 
 import com.meridian.erp.dto.ApiResponse;
-import com.meridian.erp.entity.Concepto;
 import com.meridian.erp.service.ConceptoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,10 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/conceptos")
+@RequestMapping("/api/concepto")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class ConceptoController {
@@ -20,111 +19,66 @@ public class ConceptoController {
     private final ConceptoService conceptoService;
     
     /**
-     * GET /api/conceptos?empresaId=1
-     * Listar conceptos por empresa
+     * GET /api/concepto/buscar
+     * Buscar conceptos por código o descripción
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> buscar(
+            @RequestParam Long empresaId,
+            @RequestParam String busqueda) {
+        try {
+            System.out.println("Buscando concepto: " + busqueda + " para empresa: " + empresaId);
+            
+            List<Map<String, Object>> conceptos = conceptoService.buscarConceptos(empresaId, busqueda);
+            
+            if (conceptos.isEmpty()) {
+                return ResponseEntity.ok(ApiResponse.success("No se encontraron conceptos", conceptos));
+            }
+            
+            return ResponseEntity.ok(ApiResponse.success("Conceptos encontrados", conceptos));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Error al buscar conceptos: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * GET /api/concepto
+     * Listar todos los conceptos activos de una empresa
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Concepto>>> listar(@RequestParam Integer empresaId) {
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> listar(
+            @RequestParam Long empresaId) {
         try {
-            List<Concepto> conceptos = conceptoService.listarPorEmpresa(empresaId);
-            return ResponseEntity.ok(
-                ApiResponse.success("Conceptos obtenidos exitosamente", conceptos)
-            );
+            List<Map<String, Object>> conceptos = conceptoService.listarConceptos(empresaId);
+            return ResponseEntity.ok(ApiResponse.success("Conceptos obtenidos exitosamente", conceptos));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al obtener conceptos: " + e.getMessage()));
+                    .body(ApiResponse.error("Error al obtener conceptos: " + e.getMessage()));
         }
     }
     
     /**
-     * GET /api/conceptos/{id}
-     * Obtener concepto por ID
+     * GET /api/concepto/{id}
+     * Obtener un concepto por ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Concepto>> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerPorId(@PathVariable Long id) {
         try {
-            Optional<Concepto> concepto = conceptoService.obtenerPorId(id);
+            Map<String, Object> concepto = conceptoService.obtenerConceptoPorId(id);
             
-            if (concepto.isPresent()) {
-                return ResponseEntity.ok(
-                    ApiResponse.success("Concepto obtenido exitosamente", concepto.get())
-                );
+            if (concepto != null) {
+                return ResponseEntity.ok(ApiResponse.success("Concepto obtenido exitosamente", concepto));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error("Concepto no encontrado"));
+                        .body(ApiResponse.error("Concepto no encontrado"));
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al obtener concepto: " + e.getMessage()));
-        }
-    }
-    
-    /**
-     * POST /api/conceptos
-     * Crear nuevo concepto
-     */
-    @PostMapping
-    public ResponseEntity<ApiResponse<Concepto>> crear(
-            @RequestBody Concepto concepto,
-            @RequestParam Long usuarioId) {
-        try {
-            Concepto nuevoConcepto = conceptoService.crear(concepto, usuarioId);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Concepto creado exitosamente", nuevoConcepto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al crear concepto: " + e.getMessage()));
-        }
-    }
-    
-    /**
-     * PUT /api/conceptos/{id}
-     * Actualizar concepto
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Concepto>> actualizar(
-            @PathVariable Long id,
-            @RequestBody Concepto concepto,
-            @RequestParam Long usuarioId) {
-        try {
-            Concepto conceptoActualizado = conceptoService.actualizar(id, concepto, usuarioId);
-            
-            if (conceptoActualizado != null) {
-                return ResponseEntity.ok(
-                    ApiResponse.success("Concepto actualizado exitosamente", conceptoActualizado)
-                );
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error("Concepto no encontrado"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al actualizar concepto: " + e.getMessage()));
-        }
-    }
-    
-    /**
-     * DELETE /api/conceptos/{id}
-     * Eliminar concepto (soft delete)
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminar(
-            @PathVariable Long id,
-            @RequestParam Long usuarioId) {
-        try {
-            boolean eliminado = conceptoService.eliminar(id, usuarioId);
-            
-            if (eliminado) {
-                return ResponseEntity.ok(
-                    ApiResponse.success("Concepto eliminado exitosamente", null)
-                );
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error("Concepto no encontrado"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Error al eliminar concepto: " + e.getMessage()));
+                    .body(ApiResponse.error("Error al obtener concepto: " + e.getMessage()));
         }
     }
 }

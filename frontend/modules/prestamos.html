@@ -1,0 +1,253 @@
+<!-- Módulo de Préstamos -->
+<style>
+    .tabla-prestamos {
+        font-size: 13px;
+    }
+    
+    .tabla-prestamos th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+    
+    .tabla-prestamos td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+    
+    .btn-accion-prestamos {
+        padding: 4px 8px;
+        margin: 0 2px;
+    }
+    
+    .filtros-prestamos {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-hand-holding-usd me-2 text-primary"></i>
+        PRÉSTAMOS
+    </h1>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body filtros-prestamos">
+        <div class="row g-3 align-items-end">
+            <!-- Período -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Período</label>
+                <input type="month" class="form-control" id="filtroPeriodoPrestamos">
+            </div>
+            
+            <!-- Sede -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Sede</label>
+                <select class="form-select" id="filtroSedePrestamos">
+                    <option value="">* TODOS *</option>
+                </select>
+            </div>
+            
+            <!-- Botón Consultar -->
+            <div class="col-md-4">
+                <button type="button" class="btn btn-primary btn-sm" id="btnConsultarPrestamos" 
+                        style="background-color: #6c757d; border-color: #6c757d;">
+                    <i class="fas fa-search me-1"></i>
+                    Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Nuevo -->
+<div class="mb-3 text-end">
+    <button type="button" class="btn btn-primary" id="btnNuevoPrestamo" 
+            style="background-color: #ff6600; border-color: #ff6600;">
+        <i class="fas fa-plus me-2"></i>
+        Nuevo
+    </button>
+</div>
+
+<!-- Tabla de Préstamos -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaPrestamos" class="table table-striped table-bordered table-hover tabla-prestamos" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 100px;">Fecha</th>
+                        <th style="width: 100px;">Nro Doc</th>
+                        <th style="min-width: 200px;">Apellidos y Nombres</th>
+                        <th style="min-width: 180px;">Concepto</th>
+                        <th style="min-width: 150px;">Puesto</th>
+                        <th style="min-width: 150px;">Sede</th>
+                        <th style="min-width: 150px;">Motivo</th>
+                        <th style="width: 120px;">Prestamo</th>
+                        <th style="width: 100px;">Cuotas</th>
+                        <th style="width: 100px;">Saldo</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables llenará esto automáticamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nuevo/Editar Préstamo -->
+<div class="modal fade" id="modalPrestamo" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">
+                    <span id="tituloModalPrestamo">Nuevo Préstamo</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formPrestamo">
+                    <div class="row g-3">
+                        <!-- Nro Doc -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nro Doc</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="nroDocPrestamo" 
+                                       placeholder="Ingresa un Nro de Documento">
+                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarTrabajadorPrestamo">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="trabajadorIdPrestamo">
+                        </div>
+                        
+                        <!-- Nombre Completo (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre Completo</label>
+                            <input type="text" class="form-control bg-light" id="nombreCompletoPrestamo" readonly>
+                        </div>
+                        
+                        <!-- Sede (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Sede</label>
+                            <input type="text" class="form-control bg-light" id="sedePrestamo" readonly>
+                        </div>
+                        
+                        <!-- Fecha -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha</label>
+                            <input type="date" class="form-control" id="modalFechaPrestamo" 
+                                   placeholder="DD/MM/YYYY">
+                        </div>
+                        
+                        <!-- Motivo -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Motivo</label>
+                            <select class="form-select" id="modalMotivoPrestamo">
+                                <option value="">* Seleccione *</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Préstamo -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Préstamo</label>
+                            <input type="number" class="form-control" id="modalMontoPrestamo" 
+                                   step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        
+                        <!-- Cuotas -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cuotas</label>
+                            <select class="form-select" id="modalCuotasPrestamo">
+                                <option value="">* Seleccione *</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Cuota Aprox. (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cuota Aprox.</label>
+                            <input type="text" class="form-control bg-light text-end" id="cuotaAproxPrestamo" 
+                                   value="0.00" readonly>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón Generar Cronograma -->
+                    <div class="row mt-3">
+                        <div class="col-md-12 text-end">
+                            <button type="button" class="btn btn-secondary" id="btnGenerarCronograma">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Generar Cronograma de Cuotas
+                            </button>
+                            <div class="text-muted small mt-2">
+                                Complete todos los campos y presione este botón para generar las cuotas
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalle de Cuotas -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6 class="fw-semibold mb-3">Detalle de Cuotas</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 60px;" class="text-center">#</th>
+                                            <th style="width: 150px;" class="text-center">Fecha Pago</th>
+                                            <th class="text-center">Aplicar a la Planilla</th>
+                                            <th style="width: 120px;" class="text-center">Monto</th>
+                                            <th style="width: 120px;" class="text-center">Saldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyDetalleCuotas">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">
+                                                No hay cuotas generadas
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-5" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-lg px-5" id="btnGuardarPrestamo" 
+                        style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script del módulo -->
+<script src="/js/modules/prestamos.js"></script>

@@ -21,7 +21,7 @@ const trabajador = {
         
         this.tablaTrabajadores = $('#tablaTrabajadores').DataTable({
             ajax: {
-                url: `/api/trabajadores/empresa/${empresaId}`,
+                url: `http://localhost:3000/api/trabajador?empresaId=${empresaId}`,
                 dataSrc: function(json) {
                     if (json.success && json.data) {
                         return json.data;
@@ -42,32 +42,32 @@ const trabajador = {
                     }
                 },
                 {
-                    data: 'sedeDescripcion',
+                    data: 'sedescripcion',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'tipoTrabajador',
+                    data: 'tipoplanilla',
                     className: 'text-center',
                     render: function(data) {
-                        if (data === '01') {
-                            return '<span class="badge bg-primary">PLA</span>';
-                        } else if (data === '02') {
-                            return '<span class="badge bg-info">RH</span>';
+                        if (data === 'PLANILLA') {
+                            return '<span class="badge bg-primary">PLANILLA</span>';
+                        } else if (data === 'RRHH') {
+                            return '<span class="badge bg-info">RRHH</span>';
                         }
-                        return '-';
+                        return data || '-';
                     }
                 },
                 {
-                    data: 'tipoDocumentoDescripcion',
+                    data: 'tipodocumentodescripcion',
                     className: 'text-center',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'numeroDocumento',
+                    data: 'numerodocumento',
                     className: 'text-center',
                     render: function(data) {
                         return data || '-';
@@ -76,52 +76,52 @@ const trabajador = {
                 {
                     data: null,
                     render: function(data, type, row) {
-                        const apellidos = (row.apellidoPaterno || '') + ' ' + (row.apellidoMaterno || '');
+                        const apellidos = (row.apellidopaterno || '') + ' ' + (row.apellidomaterno || '');
                         const nombres = row.nombres || '';
                         return (apellidos + ' ' + nombres).trim() || '-';
                     }
                 },
                 {
-                    data: 'generoDescripcion',
+                    data: 'generodescripcion',
                     className: 'text-center',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'fechaNacimiento',
+                    data: 'fechanacimiento',
                     className: 'text-center',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'fechaIngreso',
+                    data: 'fechaingreso',
                     className: 'text-center',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'puestoDescripcion',
+                    data: 'puestodescripcion',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'regimenLaboralDescripcion',
+                    data: 'regimenlaboraldescripcion',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'regimenPensionarioDescripcion',
+                    data: 'regimenpensionariodescripcion',
                     render: function(data) {
                         return data || '-';
                     }
                 },
                 {
-                    data: 'fechaCese',
+                    data: 'fechacese',
                     className: 'text-center',
                     render: function(data) {
                         return data || '-';
@@ -901,7 +901,7 @@ const trabajador = {
         
         try {
             // Cargar datos del trabajador
-            const response = await fetch(`/api/trabajadores/${id}`);
+            const response = await fetch(`/api/trabajador/${id}`);
             const result = await response.json();
             
             if (result.success && result.data) {
@@ -927,31 +927,31 @@ const trabajador = {
                 $('#trabajadorId').val(trabajador.id);
                 
                 // Datos Personales
-                $('#tipoTrabajador').val(trabajador.tipoTrabajador);
+                $('#tipoTrabajador').val(trabajador.tipoplanilla);
                 // Seleccionar el radio button correspondiente
-                if (trabajador.tipoTrabajador === '01') {
+                if (trabajador.tipoplanilla === '01') {
                     $('#radioPlanilla').prop('checked', true);
-                } else if (trabajador.tipoTrabajador === '02') {
+                } else if (trabajador.tipoplanilla === '02') {
                     $('#radioRRHH').prop('checked', true);
                 }
-                $('#tipoDocumento').val(trabajador.tipoDocumento);
-                $('#nroDocumento').val(trabajador.numeroDocumento);
-                $('#apPaterno').val(trabajador.apellidoPaterno);
-                $('#apMaterno').val(trabajador.apellidoMaterno);
+                $('#tipoDocumento').val(trabajador.tipodocumento);
+                $('#nroDocumento').val(trabajador.numerodocumento);
+                $('#apPaterno').val(trabajador.apellidopaterno);
+                $('#apMaterno').val(trabajador.apellidomaterno);
                 $('#nombres').val(trabajador.nombres);
-                $('#telefono').val(trabajador.numeroCelular);
+                $('#telefono').val(trabajador.celular);
                 $('#correo').val(trabajador.correo);
-                $('#fechaNacimiento').val(trabajador.fechaNacimiento);
+                $('#fechaNacimiento').val(trabajador.fechanacimiento);
                 $('#sexo').val(trabajador.genero);
-                $('#estadoCivil').val(trabajador.estadoCivil);
-                $('#regimenLaboral').val(trabajador.regimenLaboral);
+                $('#estadoCivil').val(trabajador.estadocivil);
+                $('#regimenLaboral').val(trabajador.regimenlaboral);
                 
                 // Cambiar título y botón
                 $('#modalTrabajadorTitle').text('Editar Trabajador');
                 $('.btn-guardar-trabajador').html('<i class="fas fa-save me-1"></i>Actualizar');
                 
                 // Ajustar formulario según tipo de trabajador
-                self.ajustarFormularioPorTipo(trabajador.tipoTrabajador);
+                self.ajustarFormularioPorTipo(trabajador.tipoplanilla);
                 
                 // Abrir modal
                 const modalElement = document.getElementById('modalTrabajador');
@@ -961,31 +961,30 @@ const trabajador = {
                 modalElement.addEventListener('shown.bs.modal', function llenarCampos() {
                     // Datos Laborales
                     setTimeout(() => {
-                        $('#fechaIngresoLaboral').val(trabajador.fechaIngreso || '');
-                        $('#sede').val(trabajador.sedeDescripcion || '');
-                        $('#puesto').val(trabajador.puestoDescripcion || '');
-                        $('#turno').val(trabajador.turnoId || '');
-                        $('#horario').val(trabajador.horarioId || '');
-                        $('#diaDescanso').val(trabajador.diaDescanso || '');
-                        $('#horaEntrada').val(trabajador.horaEntrada || '');
-                        $('#horaSalida').val(trabajador.horaSalida || '');
+                        $('#fechaIngresoLaboral').val(trabajador.fechaingresolaboral || '');
+                        $('#sede').val(trabajador.sede || '');
+                        $('#puesto').val(trabajador.puesto || '');
+                        $('#turno').val(trabajador.turno || '');
+                        $('#horario').val(trabajador.horario || '');
+                        $('#diaDescanso').val(trabajador.diadescanso || '');
+                        $('#horaEntrada').val(trabajador.horaentrada || '');
+                        $('#horaSalida').val(trabajador.horasalida || '');
                         
                         console.log('✅ Datos laborales insertados en los campos');
                     }, 100);
                     
                     // Datos de Pensión
-                    $('#regimenPensionario').val(trabajador.regimenPensionarioDescripcion || '');
+                    $('#regimenPensionario').val(trabajador.regimenpensionario || '');
                     $('#cuspp').val(trabajador.cuspp || '');
                     
                     // Remuneración
-                    $('#tipoPago').val(trabajador.tipoPago || '');
-                    $('#banco').val(trabajador.bancoRemuneracion || '');
-                    $('#numeroCuenta').val(trabajador.numeroCuentaRemuneracion || '');
-                    $('#tipoCuenta').val(trabajador.tipoCuenta || '');
+                    $('#tipoPago').val(trabajador.tipopago || '');
+                    $('#banco').val(trabajador.bancorem || '');
+                    $('#numeroCuenta').val(trabajador.nrocuentarem || '');
                     
                     // CTS
-                    $('#ctsBanco').val(trabajador.bancoCts || '');
-                    $('#ctsNumeroCuenta').val(trabajador.numeroCuentaCts || '');
+                    $('#ctsBanco').val(trabajador.bancocts || '');
+                    $('#ctsNumeroCuenta').val(trabajador.nrocuentacts || '');
                     
                     // Remover el event listener para que no se ejecute múltiples veces
                     modalElement.removeEventListener('shown.bs.modal', llenarCampos);

@@ -389,12 +389,20 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2">
-                <h5 class="modal-title fw-bold w-100 text-center" style="color: #333;">
+                <h5 class="modal-title fw-bold w-100 text-center" id="modalConceptosTrabajadorTitle" style="color: #333;">
                     Conceptos Del Trabajador
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body pt-2">
+                <!-- Mensaje de ayuda (solo visible al crear contrato) -->
+                <div class="alert alert-success alert-dismissible fade show d-none" role="alert" id="alertConceptosNuevoContrato">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Conceptos Guardados:</strong> Los conceptos se han guardado automáticamente según el régimen laboral. 
+                    Puedes ajustar los valores, agregar o eliminar conceptos y hacer clic en "Guardar" para actualizar.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
                 <!-- Información del Trabajador -->
                 <div class="row mb-3">
                     <div class="col-md-4">
@@ -433,7 +441,8 @@
                                 <th style="width: 100px; text-align: center;">Cod.</th>
                                 <th style="text-align: center;">Concepto</th>
                                 <th style="width: 120px; text-align: center;">Tipo</th>
-                                <th style="width: 150px; text-align: center;">Tipo Valor</th>
+                                <th style="width: 130px; text-align: center;">Tipo Valor</th>
+                                <th style="width: 120px; text-align: center;">Valor</th>
                                 <th style="width: 60px; text-align: center;">
                                     <i class="fas fa-cog"></i>
                                 </th>
@@ -441,7 +450,7 @@
                         </thead>
                         <tbody id="tablaConceptosTrabajadorBody">
                             <tr>
-                                <td colspan="6" class="text-center text-muted">
+                                <td colspan="7" class="text-center text-muted">
                                     No hay conceptos asignados
                                 </td>
                             </tr>

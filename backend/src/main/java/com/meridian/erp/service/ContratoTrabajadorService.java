@@ -200,4 +200,65 @@ public class ContratoTrabajadorService {
     public List<ContratoTrabajador> listarActivos() {
         return contratoTrabajadorRepository.findByEstadoOrderByFechaInicioLaboralDesc(1);
     }
+    
+    /**
+     * Listar trabajadores activos por sede, turno y fecha para asistencia
+     */
+    public List<Map<String, Object>> listarTrabajadoresActivosPorSedeTurno(
+            Integer empresaId, 
+            Long sedeId, 
+            String turnoId, 
+            LocalDate fecha) {
+        System.out.println("=== CONSULTA TRABAJADORES ACTIVOS ===");
+        System.out.println("EmpresaId: " + empresaId);
+        System.out.println("SedeId: " + sedeId);
+        System.out.println("TurnoId: " + turnoId);
+        System.out.println("Fecha: " + fecha);
+        
+        // Verificar si la fecha es un feriado
+        String sqlFeriado = "SELECT COUNT(*) FROM public.rrhh_mferiados " +
+                "WHERE ff_fechaferiado = ? AND imempresa_id = ? AND if_estado = 1";
+        Integer esFeriado = jdbcTemplate.queryForObject(sqlFeriado, Integer.class, fecha, empresaId);
+        boolean hayFeriado = esFeriado != null && esFeriado > 0;
+        
+        System.out.println("Es feriado: " + hayFeriado);
+        
+        String sql = "SELECT " +
+                "c.imcontratotrabajador_id as contratoid, " +
+                "c.ict_trabajador as trabajadorid, " +
+                "t.tt_nrodoc as numerodocumento, " +
+                "t.tt_apellidopaterno as apellidopaterno, " +
+                "t.tt_apellidomaterno as apellidomaterno, " +
+                "t.tt_nombres as nombres, " +
+                "c.fct_fechainiciolaboral as fechainiciolaboral, " +
+                "c.fct_fechainicio as fechainiciocontrato, " +
+                "c.hct_horaentrada as horaentrada, " +
+                "c.hct_horasalida as horasalida, " +
+                "c.ict_turno as turnoid, " +
+                "tu.tt_descripcion as turnodescripcion, " +
+                "c.ict_sede as sedeid, " +
+                "s.ts_descripcion as sededescripcion, " +
+                "c.ict_diadescanso as diadescanso, " +
+                "ds.tds_descripcion as diadescansodescripcion, " +
+                (hayFeriado ? "true" : "false") + " as esferiado " +
+                "FROM public.rrhh_mcontratotrabajador c " +
+                "INNER JOIN public.rrhh_trabajador t ON c.ict_trabajador = t.itrabajador_id " +
+                "INNER JOIN public.rrhh_msede s ON c.ict_sede = s.imsede_id " +
+                "INNER JOIN public.rrhh_mturno tu ON c.ict_turno = tu.imturno_id " +
+                "LEFT JOIN public.rrhh_mdiasemana ds ON c.ict_diadescanso = ds.idiasemana_id " +
+                "WHERE c.ict_empresa = ? " +
+                "AND c.ict_sede = ? " +
+                "AND c.ict_turno = ? " +
+                "AND c.ict_estado = 1 " +
+                "AND c.fct_fechainicio <= ? " +
+                "AND (c.fct_fechafinlaboral IS NULL OR c.fct_fechafinlaboral >= ?) " +
+                "ORDER BY t.tt_apellidopaterno, t.tt_apellidomaterno, t.tt_nombres";
+        
+        System.out.println("SQL: " + sql);
+        
+        List<Map<String, Object>> resultado = jdbcTemplate.queryForList(sql, empresaId, sedeId, turnoId, fecha, fecha);
+        System.out.println("Resultados encontrados: " + resultado.size());
+        
+        return resultado;
+    }
 }

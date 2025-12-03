@@ -1,0 +1,196 @@
+<!-- Módulo de Cronograma de Vacaciones -->
+<style>
+    .tabla-cronograma-vacaciones {
+        font-size: 13px;
+    }
+    
+    .tabla-cronograma-vacaciones th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px 8px;
+    }
+    
+    .tabla-cronograma-vacaciones td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+    
+    .btn-accion-vacaciones {
+        padding: 4px 8px;
+        margin: 0 2px;
+    }
+    
+    /* Estilos para edición inline */
+    #tablaDetalleCronograma .editable-cell {
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+    }
+    
+    #tablaDetalleCronograma .editable-cell:hover {
+        background-color: #fff3cd !important;
+    }
+    
+    #tablaDetalleCronograma .editable-cell .cell-input {
+        width: 100%;
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+    
+    #tablaDetalleCronograma .editable-cell .cell-display {
+        display: inline-block;
+        min-height: 20px;
+        width: 100%;
+    }
+    
+    #tablaDetalleCronograma tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    #tablaDetalleCronograma .btn-sm {
+        padding: 2px 6px;
+        font-size: 11px;
+    }
+    
+    /* Campo de días calculado automáticamente (readonly) */
+    #tablaDetalleCronograma [data-field="dias"] {
+        background-color: #f8f9fa !important;
+        cursor: default !important;
+    }
+    
+    #tablaDetalleCronograma [data-field="dias"]:hover {
+        background-color: #f8f9fa !important;
+    }
+    
+    #tablaDetalleCronograma [data-field="dias"] .cell-input {
+        background-color: #e9ecef !important;
+        cursor: not-allowed;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    #tablaDetalleCronograma [data-field="dias"] .cell-display {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+    
+    /* Campo de observaciones */
+    #tablaDetalleCronograma [data-field="observaciones"] .cell-input {
+        resize: vertical;
+        min-height: 50px;
+        font-size: 12px;
+    }
+    
+    #tablaDetalleCronograma [data-field="observaciones"] .cell-display {
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+        CRONOGRAMA DE VACACIONES
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-primary btn-nuevo-cronograma" style="background-color: #ff6600; border-color: #ff6600;">
+            <i class="fas fa-plus me-1"></i>
+            Nuevo
+        </button>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body" style="background-color: #f8f9fa; padding: 15px;">
+        <div class="row g-3 align-items-end">
+            <!-- Botón Consultar -->
+            <div class="col-md-12 text-end">
+                <button type="button" class="btn btn-primary btn-sm btn-consultar-cronograma" style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-search me-1"></i>
+                    Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Cronograma -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaCronogramaVacaciones" class="table table-striped table-bordered table-hover tabla-cronograma-vacaciones" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 100px;">Año</th>
+                        <th style="width: 120px;">Fecha Desde</th>
+                        <th style="width: 120px;">Fecha Hasta</th>
+                        <th style="width: 150px;">Total Trabajadores</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables llenará esto automáticamente -->
+                </tbody>
+            </table>
+        </div>
+        
+
+    </div>
+</div>
+
+<!-- Modal para Generación de Cronograma -->
+<div class="modal fade" id="modalCronogramaVacaciones" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="modalCronogramaTitle">
+                    Generación de Cronograma
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-4">
+                <form id="formCronogramaVacaciones">
+                    <div class="row g-4">
+                        <!-- Fecha Desde -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Desde:</label>
+                            <input type="date" class="form-control form-control-lg" id="cronogramaFechaDesde" required>
+                        </div>
+                        
+                        <!-- Fecha Hasta -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Hasta:</label>
+                            <input type="date" class="form-control form-control-lg" id="cronogramaFechaHasta" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-2">
+                <div class="row g-3 w-100">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-outline-secondary btn-lg w-100" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-primary btn-lg w-100 btn-generar-cronograma" style="background-color: #ff6600; border-color: #ff6600;">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Generar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script del módulo -->
+<script src="/js/modules/cronograma-vacaciones.js"></script>

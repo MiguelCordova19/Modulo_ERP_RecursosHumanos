@@ -1,0 +1,240 @@
+<!-- Módulo de Apoyo / Bono -->
+<style>
+    .tabla-apoyo-bono {
+        font-size: 13px;
+    }
+    
+    .tabla-apoyo-bono th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+    
+    .tabla-apoyo-bono td {
+        vertical-align: middle;
+        padding: 8px;
+    }
+    
+    .btn-accion-apoyo-bono {
+        padding: 4px 8px;
+        margin: 0 2px;
+    }
+    
+    .filtros-apoyo-bono {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+</style>
+
+<!-- Header del módulo -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-gift me-2 text-primary"></i>
+        APOYO / BONO
+    </h1>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body filtros-apoyo-bono">
+        <div class="row g-3 align-items-end">
+            <!-- Período -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Período</label>
+                <input type="month" class="form-control" id="filtroPeriodoApoyoBono">
+            </div>
+            
+            <!-- Sede -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Sede</label>
+                <select class="form-select" id="filtroSedeApoyoBono">
+                    <option value="">* TODOS *</option>
+                </select>
+            </div>
+            
+            <!-- Turno -->
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Turno</label>
+                <select class="form-select" id="filtroTurnoApoyoBono">
+                    <option value="">* TODOS *</option>
+                </select>
+            </div>
+            
+            <!-- Botón Consultar -->
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary btn-sm" id="btnConsultarApoyoBono" 
+                        style="background-color: #6c757d; border-color: #6c757d;">
+                    <i class="fas fa-search me-1"></i>
+                    Consultar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Nuevo -->
+<div class="mb-3 text-end">
+    <button type="button" class="btn btn-primary" id="btnNuevoApoyoBono" 
+            style="background-color: #ff6600; border-color: #ff6600;">
+        <i class="fas fa-plus me-2"></i>
+        Nuevo
+    </button>
+</div>
+
+<!-- Tabla de Apoyo/Bono -->
+<div class="card shadow-sm">
+    <div class="card-body p-2">
+        <div class="table-responsive">
+            <table id="tablaApoyoBono" class="table table-striped table-bordered table-hover tabla-apoyo-bono" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 100px;">Fecha</th>
+                        <th style="width: 100px;">Nro Doc</th>
+                        <th style="min-width: 200px;">Apellidos y Nombres</th>
+                        <th style="min-width: 180px;">Concepto</th>
+                        <th style="min-width: 150px;">Puesto</th>
+                        <th style="min-width: 150px;">Sede Origen</th>
+                        <th style="min-width: 150px;">Sede Apoyo</th>
+                        <th style="width: 100px;">Turno</th>
+                        <th style="width: 100px;">Tipo</th>
+                        <th style="width: 120px;">Tipo De Apoyo</th>
+                        <th style="width: 100px;">Importe</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables llenará esto automáticamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nuevo/Editar Apoyo/Bono -->
+<div class="modal fade" id="modalApoyoBono" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-center w-100">
+                    <span id="tituloModalApoyoBono">Nuevo Apoyo / Bono</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formApoyoBono">
+                    <div class="row g-3">
+                        <!-- Nro Doc -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nro Doc</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="nroDocApoyoBono" 
+                                       placeholder="Ingresa un Nro de Documento">
+                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarTrabajadorApoyoBono">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="trabajadorIdApoyoBono">
+                        </div>
+                        
+                        <!-- Nombre Completo (readonly) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre Completo</label>
+                            <input type="text" class="form-control bg-light" id="nombreCompletoApoyoBono" readonly>
+                        </div>
+                        
+                        <!-- Concepto -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Concepto</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="buscarConceptoApoyoBono" 
+                                       placeholder="Seleccione un concepto">
+                                <button class="btn btn-outline-secondary" type="button" id="btnBuscarConceptoApoyoBono">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="conceptoIdApoyoBono">
+                        </div>
+                        
+                        <!-- Radio Buttons: Apoyo / Bono -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tipo</label>
+                            <div class="d-flex gap-4 mt-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipoApoyoBono" 
+                                           id="radioApoyo" value="APOYO" checked>
+                                    <label class="form-check-label" for="radioApoyo">
+                                        Apoyo
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipoApoyoBono" 
+                                           id="radioBono" value="BONO">
+                                    <label class="form-check-label" for="radioBono">
+                                        Bono
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fecha -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha</label>
+                            <input type="date" class="form-control" id="modalFechaApoyoBono" 
+                                   placeholder="DD/MM/YYYY">
+                        </div>
+                        
+                        <!-- Apoyo -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Apoyo</label>
+                            <select class="form-select" id="modalTipoDeApoyoBono">
+                                <option value="">* Seleccione *</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Importe -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Importe</label>
+                            <input type="number" class="form-control text-end" id="modalImporteApoyoBono" 
+                                   step="0.01" min="0" value="0.00">
+                        </div>
+                        
+                        <!-- Turno -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Turno</label>
+                            <select class="form-select" id="modalTurnoApoyoBono">
+                                <option value="">* Seleccione *</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Sede -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Sede</label>
+                            <select class="form-select" id="modalSedeApoyoBono">
+                                <option value="">* Seleccione *</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-lg px-5" id="btnGuardarApoyoBono" 
+                        style="background-color: #ff6600; border-color: #ff6600;">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script del módulo -->
+<script src="/js/modules/apoyo-bono.js"></script>
